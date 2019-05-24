@@ -1,0 +1,32 @@
+OS := $(shell uname)
+ifeq ($(OS), Darwin)
+	PLATFORM = mac64
+	GUROBIDIR = /Library/gurobi811/mac64
+	LIBNAME = gurobi81
+else
+	PLATFORM = linux64
+	GUROBIDIR = /opt/gurobi811/linux64
+	LIBNAME = gurobi81
+endif
+
+
+# To work on Mac I had to create a link of libgurobi70.so in
+# /Library/Frameworks/R.framework/Resources/lib
+# Command: ln -s /Library/gurobi702/mac64/lib/libgurobi70.so libgurobi70.so
+# If you get an error loading library, "undefined symbol",
+# recompile with -fPIC option and link libraries in src/build gurobi subdirectory
+# New in Makefile: "C++FLAGS = -m64 -O -fPIC"
+# Make new link for libgurobi_c++.so
+# run "ldconfig" after create libraries links
+# chech with "ldconfig -p | grep gurobi"
+
+INC	= $(GUROBIDIR)/include
+LIB	= $(GUROBIDIR)/lib
+
+CCC = g++
+CC  = gcc
+
+PKG_CPPFLAGS= -I$(INC) -std=c++11 -fopenmp
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -L$(LIB) -lgurobi_c++ -l$(LIBNAME) -lm -fopenmp
+
+
