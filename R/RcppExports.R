@@ -5,3 +5,31 @@ binarymodel <- function(distances, m, MAX_TIME = 10, THREADS = 4L, verbose = FAL
     .Call(`_mdp_binarymodel`, distances, m, MAX_TIME, THREADS, verbose)
 }
 
+#' Execute a Tabu Search in the neighborhood of Solution S
+#' @param S initial solution
+#' @param DistanceMatrix 
+#' @return Best solution of local tabu search 
+#' @examples
+#' dotabuSearch()
+doTabuSearch <- function(S, DistanceMatrix, alpha = 15L, maxIterations = 100L) {
+    .Call(`_mdp_doTabuSearch`, S, DistanceMatrix, alpha, maxIterations)
+}
+
+memeticAlgorithm <- function(DistanceMatrix, tourSize, populationSize) {
+    .Call(`_mdp_memeticAlgorithm`, DistanceMatrix, tourSize, populationSize)
+}
+
+getBinaryTourFitness <- function(Tour, DistanceMatrix) {
+    .Call(`_mdp_getBinaryTourFitness`, Tour, DistanceMatrix)
+}
+
+#' Get fitness from tour
+#' @details Get fitness using the tour, m and distance matrix
+#' @param \code{Tour} Set of tour's nodes.
+#' @param \code{Distances} Distance matrix
+#' @return A double value representing the chromosome fitness
+#' @export 
+getTourFitness <- function(Tour, Distances) {
+    .Call(`_mdp_getTourFitness`, Tour, Distances)
+}
+

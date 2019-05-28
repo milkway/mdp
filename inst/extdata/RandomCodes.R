@@ -1,5 +1,6 @@
 library(tidyverse)
 
+
 distances <- c(0, 1, 1, 1, 1, 4, 2, 1,
                1, 0, 3, 3, 3, 2, 1, 1, 
                1, 3, 0, 4, 2, 2, 1, 2,
@@ -36,3 +37,8 @@ tour <-
   sample_n(1) %>% ungroup() %>% select(N) %>% unlist(use.names = FALSE) %>% 
   sample(50)
 sum(distances[tour,tour])/2
+
+binaryTour <- rep(0, 500)
+binaryTour[tour] <- 1
+system.time(B <- doTabuSearch(binaryTour, distances, alpha = 15, maxIterations =  5000))
+getBinaryTourFitness(B, distances)

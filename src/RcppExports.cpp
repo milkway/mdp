@@ -21,9 +21,64 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// doTabuSearch
+arma::uvec doTabuSearch(arma::uvec S, const arma::mat& DistanceMatrix, int alpha, int maxIterations);
+RcppExport SEXP _mdp_doTabuSearch(SEXP SSEXP, SEXP DistanceMatrixSEXP, SEXP alphaSEXP, SEXP maxIterationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type DistanceMatrix(DistanceMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< int >::type maxIterations(maxIterationsSEXP);
+    rcpp_result_gen = Rcpp::wrap(doTabuSearch(S, DistanceMatrix, alpha, maxIterations));
+    return rcpp_result_gen;
+END_RCPP
+}
+// memeticAlgorithm
+arma::uvec memeticAlgorithm(const arma::mat& DistanceMatrix, int tourSize, int populationSize);
+RcppExport SEXP _mdp_memeticAlgorithm(SEXP DistanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type DistanceMatrix(DistanceMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type tourSize(tourSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type populationSize(populationSizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(memeticAlgorithm(DistanceMatrix, tourSize, populationSize));
+    return rcpp_result_gen;
+END_RCPP
+}
+// getBinaryTourFitness
+double getBinaryTourFitness(const arma::uvec& Tour, const arma::mat& DistanceMatrix);
+RcppExport SEXP _mdp_getBinaryTourFitness(SEXP TourSEXP, SEXP DistanceMatrixSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type Tour(TourSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type DistanceMatrix(DistanceMatrixSEXP);
+    rcpp_result_gen = Rcpp::wrap(getBinaryTourFitness(Tour, DistanceMatrix));
+    return rcpp_result_gen;
+END_RCPP
+}
+// getTourFitness
+double getTourFitness(const arma::uvec& Tour, const arma::mat& Distances);
+RcppExport SEXP _mdp_getTourFitness(SEXP TourSEXP, SEXP DistancesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type Tour(TourSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Distances(DistancesSEXP);
+    rcpp_result_gen = Rcpp::wrap(getTourFitness(Tour, Distances));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mdp_binarymodel", (DL_FUNC) &_mdp_binarymodel, 5},
+    {"_mdp_doTabuSearch", (DL_FUNC) &_mdp_doTabuSearch, 4},
+    {"_mdp_memeticAlgorithm", (DL_FUNC) &_mdp_memeticAlgorithm, 3},
+    {"_mdp_getBinaryTourFitness", (DL_FUNC) &_mdp_getBinaryTourFitness, 2},
+    {"_mdp_getTourFitness", (DL_FUNC) &_mdp_getTourFitness, 2},
     {NULL, NULL, 0}
 };
 

@@ -9,6 +9,14 @@ else
 	LIBNAME = gurobi81
 endif
 
+# Code completion problems
+#compiler::enableJIT(2) # Original is 3 for jit. and 
+#compiler::setCompilerOptions(optimize = 1)
+#compiler::getCompilerOption("optimize")
+
+
+
+
 
 # To work on Mac I had to create a link of libgurobi70.so in
 # /Library/Frameworks/R.framework/Resources/lib
@@ -26,7 +34,7 @@ LIB	= $(GUROBIDIR)/lib
 CCC = g++
 CC  = gcc
 
-PKG_CPPFLAGS= -I$(INC) -std=c++11 -fopenmp
+PKG_CPPFLAGS= -I$(INC) -std=c++11 -fopenmp -O2
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -L$(LIB) -lgurobi_c++ -l$(LIBNAME) -lm -fopenmp
 
 
