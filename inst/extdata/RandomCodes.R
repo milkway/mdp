@@ -21,12 +21,6 @@ N <- 500
 
 distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.1.a.n500m50.rds"))
 distances.d <- as.dist(distances)
-cluster.mdp <- hclust(distances.d, method = "ward.D2")
-plot(cluster.mdp, hang = -1)
-rect.hclust(cluster.mdp,50)
-
-
-
 cluster.mdp <- hclust(distances.d)
 tour <- 
   tibble(
@@ -36,9 +30,8 @@ tour <-
   group_by(Cluster) %>% 
   sample_n(1) %>% ungroup() %>% select(N) %>% unlist(use.names = FALSE) %>% 
   sample(50)
-sum(distances[tour,tour])/2
-
 binaryTour <- rep(0, 500)
 binaryTour[tour] <- 1
-system.time(B <- doTabuSearch(binaryTour, distances, alpha = 15, maxIterations =  5000))
+B <- doTabuSearch(binaryTour, distances,  alpha = 15, maxIterations =  5000)
+#microbenchmark::microbenchmark(F = doTabuSearch(binaryTour, distances, rhoOver2 = 1, alpha = 15, maxIterations =  1000), times = 10)
 getBinaryTourFitness(B, distances)

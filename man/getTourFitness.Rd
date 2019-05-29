@@ -4,7 +4,7 @@
 \alias{getTourFitness}
 \title{Get fitness from tour}
 \usage{
-getTourFitness(Tour, Distances)
+getTourFitness(Tour, distanceMatrix)
 }
 \arguments{
 \item{\code{Tour}}{Set of tour's nodes.}

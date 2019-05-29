@@ -7,20 +7,24 @@ binarymodel <- function(distances, m, MAX_TIME = 10, THREADS = 4L, verbose = FAL
 
 #' Execute a Tabu Search in the neighborhood of Solution S
 #' @param S initial solution
-#' @param DistanceMatrix 
+#' @param distanceMatrix 
 #' @return Best solution of local tabu search 
 #' @examples
 #' dotabuSearch()
-doTabuSearch <- function(S, DistanceMatrix, alpha = 15L, maxIterations = 100L) {
-    .Call(`_mdp_doTabuSearch`, S, DistanceMatrix, alpha, maxIterations)
+doTabuSearch <- function(S, distanceMatrix, alpha = 15L, rhoOver2 = 1, maxIterations = 100L) {
+    .Call(`_mdp_doTabuSearch`, S, distanceMatrix, alpha, rhoOver2, maxIterations)
 }
 
-memeticAlgorithm <- function(DistanceMatrix, tourSize, populationSize) {
-    .Call(`_mdp_memeticAlgorithm`, DistanceMatrix, tourSize, populationSize)
+memeticAlgorithm <- function(distanceMatrix, tourSize, populationSize) {
+    .Call(`_mdp_memeticAlgorithm`, distanceMatrix, tourSize, populationSize)
 }
 
-getBinaryTourFitness <- function(Tour, DistanceMatrix) {
-    .Call(`_mdp_getBinaryTourFitness`, Tour, DistanceMatrix)
+initializeOPB <- function(distanceMatrix, tourSize, populationSize = 10L) {
+    .Call(`_mdp_initializeOBP`, distanceMatrix, tourSize, populationSize)
+}
+
+getBinaryTourFitness <- function(Tour, distanceMatrix) {
+    .Call(`_mdp_getBinaryTourFitness`, Tour, distanceMatrix)
 }
 
 #' Get fitness from tour
@@ -29,7 +33,7 @@ getBinaryTourFitness <- function(Tour, DistanceMatrix) {
 #' @param \code{Distances} Distance matrix
 #' @return A double value representing the chromosome fitness
 #' @export 
-getTourFitness <- function(Tour, Distances) {
-    .Call(`_mdp_getTourFitness`, Tour, Distances)
+getTourFitness <- function(Tour, distanceMatrix) {
+    .Call(`_mdp_getTourFitness`, Tour, distanceMatrix)
 }
 

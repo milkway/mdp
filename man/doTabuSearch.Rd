@@ -4,12 +4,13 @@
 \alias{doTabuSearch}
 \title{Execute a Tabu Search in the neighborhood of Solution S}
 \usage{
-doTabuSearch(S, DistanceMatrix, alpha = 15L, maxIterations = 100L)
+doTabuSearch(S, distanceMatrix, alpha = 15L, rhoOver2 = 1,
+  maxIterations = 100L)
 }
 \arguments{
 \item{S}{initial solution}
 
-\item{DistanceMatrix}{}
+\item{distanceMatrix}{}
 }
 \value{
 Best solution of local tabu search
