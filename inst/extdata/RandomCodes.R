@@ -35,3 +35,14 @@ binaryTour[tour] <- 1
 B <- doTabuSearch(binaryTour, distances,  alpha = 15, maxIterations =  5000)
 #microbenchmark::microbenchmark(F = doTabuSearch(binaryTour, distances, rhoOver2 = 1, alpha = 15, maxIterations =  1000), times = 10)
 getBinaryTourFitness(B, distances)
+
+
+P <- initializeOPB(distances, 50, 10, 1000, 2)
+apply(P, 2, function(x){getBinaryTourFitness(x, distances)})
+
+P <- initializePool(distances, 50, 10, 100, 2)
+apply(P, 2, function(x){getBinaryTourFitness(x, distances)})
+C = doBackboneCrossOver(P[,1], P[,8], distances)
+getBinaryTourFitness(P[,9], distances)
+P2 <- updatePopulationByRank(S = C[,1], Population = P, distanceMatrix = distances, beta = .6) 
+apply(P, 2, function(x){getBinaryTourFitness(x, distances)})
