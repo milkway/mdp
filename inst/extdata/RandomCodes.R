@@ -47,3 +47,28 @@ getBinaryTourFitness(P[,9], distances)
 P2 <- updatePopulationByRank(S = C[,1], Population = P, distanceMatrix = distances, beta = .6) 
 P2 <- updatePopulationMAMDP(S = C[,1], Population = P, distanceMatrix = distances, beta = .6) 
 apply(P2, 2, function(x){getBinaryTourFitness(x, distances)})
+
+
+#######
+
+S <- mamdp(distanceMatrix = distances, 
+           tourSize = 50, 
+           populationSize = 10, 
+           maxIterations = 100, 
+           maxTime = 20)
+getBinaryTourFitness(S, distances)
+
+S <- obma(distanceMatrix = distances, 
+           tourSize = 50, 
+           populationSize = 10, 
+           maxIterations = 100, 
+           maxTime = 20)
+getBinaryTourFitness(S, distances)
+
+S <- dmamdp(distanceMatrix = distances, 
+          tourSize = 50, 
+          populationSize = 10, 
+          lostMaxIterations = 100, 
+          maxTime = 20,
+          p = .5)
+getBinaryTourFitness(S, distances)

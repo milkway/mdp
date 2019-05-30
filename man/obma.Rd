@@ -4,7 +4,8 @@
 \alias{obma}
 \title{Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem}
 \usage{
-obma(distanceMatrix, tourSize, populationSize, maxIterations)
+obma(distanceMatrix, tourSize, populationSize, maxIterations,
+  maxTime = 60)
 }
 \arguments{
 \item{\code{distanceMatrix}}{Symmetric matrix.}

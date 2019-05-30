@@ -29,7 +29,7 @@ double getTourFitness(const arma::uvec& Tour, const arma::mat& Distances);
 // Best Fitness and solution index of population
 int  findBestPopFitness(const arma::umat& Population, const arma::mat& distanceMatrix);
 // Cross Over between S_a and S_b 
-arma::uvec doCrossOver(arma::uvec S_a, arma::uvec S_b, const arma::mat& distanceMatrix); 
+arma::uvec doCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, const arma::mat& distanceMatrix); 
 // Backbone Cross Over between S_a and S_b 
 arma::umat doBackboneCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, const arma::mat& distanceMatrix); 
 // Execute a Tabu Search in the neighborhood of Solution S (MaxIter Criterium)
@@ -38,6 +38,8 @@ arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alp
 arma::uvec doTabuSearchML(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int lostmaxIterations);
 // Pool initialization 
 arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier);   
+// Pool initialization 
+arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int populationSize, int listMaxIterations, int multiplier);   
 // Opposition Based Pool Initialize()
 arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier);   
 // update population 
@@ -45,9 +47,9 @@ arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat
 // Rank based update population 
 arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);
 // Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem
-arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxInterations);   
+arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);   
 // Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem
-arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations);   
+arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);   
 // Hao's Diversification-driven Memetic Algorith for Maximum Diversity Problem 
 arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p);   
 
@@ -58,7 +60,7 @@ arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationS
 
 //' Best Fitness and solution index of population
 //' @param \code{Population} to fit.
-//' @param  \code{distanceMatrix} Square and symmetric distance matrix 
+//' @param \code{distanceMatrix} Square and symmetric distance matrix 
 //' @return A baby 
 //' @examples
 //' findBestPopFitness()
@@ -75,12 +77,12 @@ int  findBestPopFitness(const arma::umat& Population, const arma::mat& distanceM
 //' Cross Over between S_a and S_b 
 //' @param \code{S_a} Parent A
 //' @param \code{S_b} Parent B
-//' @param  \code{distanceMatrix} Square and symmetric distance matrix 
+//' @param \code{distanceMatrix} Square and symmetric distance matrix 
 //' @return A baby 
 //' @examples
 //' doCrossOver()
 // [[Rcpp::export]]
-arma::uvec doCrossOver(arma::uvec S_a, arma::uvec S_b, const arma::mat& distanceMatrix) 
+arma::uvec doCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, const arma::mat& distanceMatrix) 
 {
   arma::uvec child(S_a % S_b); // Backbone
   arma::uvec poolA = arma::find((S_a + child) == 1); // The other poor little guys in S_a
@@ -411,9 +413,9 @@ arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arm
  
  //' Pool Population initialization 
  //' @details Get the initial populatio
- //' @param \code{Tour Size}.
+ //' @param \code{tourSize} Ok. Stop it.
  //' @param \code{Distances} Distance matrix
- //' @param \code{Population Size} 
+ //' @param \code{populationSize} You know! 
  //' @return A matrix where each column is a individual in the population
  //' @export 
  // [[Rcpp::export("initializePool")]] 
@@ -463,6 +465,59 @@ arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arm
    return(population);
  }
 
+//' Pool Population initialization (Maximum Lost)
+//' @details Get the initial populatio
+//' @param \code{Tour Size} Thats it.
+//' @param \code{Distances} Distance matrix
+//' @param \code{populationSize} Same old guy 
+//' @return A matrix where each column is a individual in the population
+//' @export 
+// [[Rcpp::export]] 
+arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int lostMaxIterations = 100, int multiplier = 3){
+  int N = distanceMatrix.n_cols;
+  // if (!distanceMatrix.is_square())
+  //   Rcpp::stop("Distance Matrix must be square");
+  int count = 0;
+  arma::umat population(N, populationSize, arma::fill::zeros);
+  int flag = 0;
+  while(count < populationSize){
+    flag++;
+    int Limit = multiplier * arma::sum(arma::sum(population, 0) == 0);
+    arma::umat macroPopulation(N, Limit, arma::fill::zeros);
+    arma::vec populationFitness(Limit, arma::fill::zeros);
+#pragma omp parallel for schedule(dynamic)
+    for(int i = 0; i < Limit; i++){
+      arma::uvec nodes = arma::shuffle(arma::linspace<arma::uvec>(0, N-1, N));
+      arma::uvec tour = nodes.subvec(0, tourSize - 1);
+      arma::uvec candidate(N, arma::fill::zeros);
+      candidate.elem(tour) += 1;
+      macroPopulation.col(i) = doTabuSearchML(candidate, distanceMatrix, 15, 1, lostMaxIterations);
+      populationFitness(i) = getBinaryTourFitness(candidate, distanceMatrix);
+    }
+    arma::uvec best_index = sort_index(populationFitness, "descend");
+    auto it = best_index.begin(); 
+    if (count == 0) {
+      population.col(0) =  macroPopulation.col(best_index(0));
+      it++;
+      count++;
+    }  
+    
+    for(; it != best_index.end(); it++){
+      int distance = getSolutionToPopulationDistance(macroPopulation.col(*it), population.cols(0, count - 1));
+      if (distance >= 1) {
+        population.col(count) = macroPopulation.col(*it);
+        count++;
+        if (count == populationSize) break;
+      }
+    }  
+    
+    if (flag >  10*populationSize) {
+      Rcpp::Rcout << "Houston, we have a problem. Not that much diversity." << std::endl; 
+      break;
+    }
+  }
+  return(population);
+}
  
  
  //' Get fitness from tour
@@ -594,10 +649,39 @@ int getSolutionToPopulationDistanceByIndex(int index, const arma::umat& Populati
 //' @return A better person.
 //' @export 
 // [[Rcpp::export]]
-arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxInterations){
-  /// Initialize population
-  arma::uvec S;
-  return(S);
+arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime = 60){
+  //0. Start time
+  auto start = std::chrono::steady_clock::now();
+  std::chrono::duration<double> diff;
+  double time_elapsed = 0;
+  //1. Initialize population
+  arma::umat population = initializePool(distanceMatrix, tourSize, populationSize, maxIterations, 3);
+  //2. Find best in population
+  int bestIndex = findBestPopFitness(population, distanceMatrix);
+  arma::uvec bestSolution = population.col(bestIndex);
+  double bestFitness = getBinaryTourFitness(bestSolution, distanceMatrix);
+  //3 while loop
+  while (time_elapsed <= maxTime){
+    //4. Sample parents
+    arma::uvec nodes = arma::shuffle(arma::linspace<arma::uvec>(0, populationSize-1));
+    arma::uvec S1 = population.col(nodes(0));
+    arma::uvec S2 = population.col(nodes(1));
+    //5. Crossover
+    arma::uvec S0 = doCrossOver(S1, S2, distanceMatrix);
+    //6. TabuSearch
+    S0 = doTabuSearchMI(S0, distanceMatrix, 15, 2, maxIterations);
+    double S0Fitness = getBinaryTourFitness(S0, distanceMatrix);
+    if (S0Fitness > bestFitness){
+      bestSolution = S0;
+      bestFitness = S0Fitness;
+    }
+    //7. Update population
+    population = updatePopulation(S0, population, distanceMatrix, .6);
+    auto time = std::chrono::steady_clock::now();
+    diff = time - start;
+    time_elapsed = std::chrono::duration <double, std::milli> (diff).count()/1000;
+  }
+  return(bestSolution);
 }   
 
 
@@ -611,9 +695,49 @@ arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSi
 //' @return A better man.
 //' @export 
 // [[Rcpp::export]]
-arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations){
-  arma::uvec S;
-  return(S);
+arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime = 60){
+  //0. Start time
+  auto start = std::chrono::steady_clock::now();
+  std::chrono::duration<double> diff;
+  double time_elapsed = 0;
+  //1. Initialize population
+  arma::umat population = initializeOBP(distanceMatrix, tourSize, populationSize, maxIterations, 3);
+  //2. Find best in population
+  int bestIndex = findBestPopFitness(population, distanceMatrix);
+  arma::uvec bestSolution = population.col(bestIndex);
+  double bestFitness = getBinaryTourFitness(bestSolution, distanceMatrix);
+  //3 while loop
+  while (time_elapsed <= maxTime){
+    //4. Sample parents
+    arma::uvec nodes = arma::shuffle(arma::linspace<arma::uvec>(0, populationSize-1));
+    arma::uvec Si = population.col(nodes(0));
+    arma::uvec Sj = population.col(nodes(1));
+    //5. Crossover
+    arma::umat S0 = doBackboneCrossOver(Si, Sj, distanceMatrix);
+    //6.1. TabuSearch
+    double S0Fitness = 0;
+    S0.col(0) = doTabuSearchMI(S0.col(0), distanceMatrix, 15, 2, maxIterations);
+    S0Fitness = getBinaryTourFitness(S0.col(0), distanceMatrix);
+    if (S0Fitness > bestFitness){
+      bestSolution = S0.col(0);
+      bestFitness = S0Fitness;
+    }
+    //7.1. Update population
+    population = updatePopulation(S0.col(0), population, distanceMatrix, .6);
+    //6.2. TabuSearch
+    S0.col(1) = doTabuSearchMI(S0.col(1), distanceMatrix, 15, 2, maxIterations);
+    S0Fitness = getBinaryTourFitness(S0.col(1), distanceMatrix);
+    if (S0Fitness > bestFitness){
+      bestSolution = S0.col(1);
+      bestFitness = S0Fitness;
+    }
+    //7.2. Update population
+    population = updatePopulation(S0.col(1), population, distanceMatrix, .6);
+    auto time = std::chrono::steady_clock::now();
+    diff = time - start;
+    time_elapsed = std::chrono::duration <double, std::milli> (diff).count()/1000;
+  }
+  return(bestSolution);
 }   
 
 
@@ -628,8 +752,62 @@ arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSiz
 //' @return A better man.
 //' @export 
 // [[Rcpp::export]]
-arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p){
-  arma::uvec S;
-  return(S);
+arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int lostMaxIterations, double p){
+  //0. Start time
+  auto start = std::chrono::steady_clock::now();
+  std::chrono::duration<double> diff;
+  double time_elapsed = 0;
+  //1. Initialize population
+  arma::umat population = initializePoolML(distanceMatrix, tourSize, populationSize, lostMaxIterations, 3);
+  //2. Find best in population
+  int N = distanceMatrix.n_cols;
+  int bestIndex = findBestPopFitness(population, distanceMatrix);
+  arma::uvec bestSolution = population.col(bestIndex);
+  double bestFitness = getBinaryTourFitness(bestSolution, distanceMatrix);
+  // Rand inialization
+  std::random_device rd;  //Will be used to obtain a seed for the random number engine
+  std::mt19937 rand01(rd()); //Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> dis(0.0, 1.0);
+  //3 while loop
+  while (time_elapsed <= maxTime){
+    // Candidate
+    arma::uvec S0(N, arma::fill::zeros);
+    if (dis(rand01) > p){
+      //4. Sample parents
+      arma::uvec nodes = arma::shuffle(arma::linspace<arma::uvec>(0, populationSize-1));
+      arma::uvec S1 = population.col(nodes(0));
+      arma::uvec S2 = population.col(nodes(1));
+      //5. Crossover
+      S0 = doCrossOver(S1, S2, distanceMatrix);
+      //6. TabuSearch
+      S0 = doTabuSearchML(S0, distanceMatrix, 15, 2, lostMaxIterations);
+    } else {
+      arma::uvec nodes = arma::shuffle(arma::linspace<arma::uvec>(0, N-1, N));
+      arma::uvec tour = nodes.subvec(0, tourSize - 1);
+      arma::uvec S0(N, arma::fill::zeros);
+      S0.elem(tour) += 1;
+      S0 = doTabuSearchML(S0, distanceMatrix, 15, 2, lostMaxIterations);
+      double S0Fitness = getBinaryTourFitness(S0, distanceMatrix);
+      if (S0Fitness > bestFitness){
+        bestSolution = S0;
+        bestFitness = S0Fitness;
+      }
+      population = updatePopulation(S0, population, distanceMatrix, .6);
+      arma::uvec randS = population.col(std::floor(populationSize*((double)dis(rand01))));
+      S0 = doCrossOver(S0, randS, distanceMatrix);
+      S0 = doTabuSearchML(S0, distanceMatrix, 15, 2, lostMaxIterations);
+    }
+    double S0Fitness = getBinaryTourFitness(S0, distanceMatrix);
+    if (S0Fitness > bestFitness){
+      bestSolution = S0;
+      bestFitness = S0Fitness;
+    }
+    //7. Update population
+    population = updatePopulation(S0, population, distanceMatrix, .6);
+    auto time = std::chrono::steady_clock::now();
+    diff = time - start;
+    time_elapsed = std::chrono::duration <double, std::milli> (diff).count()/1000;
+  }
+  return(bestSolution);
 }   
                     
