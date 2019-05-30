@@ -34,7 +34,7 @@ LIB	= $(GUROBIDIR)/lib
 CCC = g++
 CC  = gcc
 
-PKG_CPPFLAGS= -I$(INC) -std=c++11 -fopenmp -O2
+PKG_CPPFLAGS= -I$(INC) -std=c++11 -fopenmp -O3
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -L$(LIB) -lgurobi_c++ -l$(LIBNAME) -lm -fopenmp
 
 

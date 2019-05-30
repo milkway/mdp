@@ -27,14 +27,34 @@ doBackboneCrossOver <- function(S_a, S_b, distanceMatrix) {
     .Call(`_mdp_doBackboneCrossOver`, S_a, S_b, distanceMatrix)
 }
 
-#' Execute a Tabu Search in the neighborhood of Solution S
+#' Execute a Tabu Search in the neighborhood of Solution S (Max Iterations)
 #' @param \code{S} initial solution
 #' @param \code{distanceMatrix} Square and symmetric distance matrix
 #' @return Best solution of local tabu search 
 #' @examples
 #' dotabuSearch()
-doTabuSearch <- function(S, distanceMatrix, alpha = 15L, rhoOver2 = 1, maxIterations = 1000L) {
-    .Call(`_mdp_doTabuSearch`, S, distanceMatrix, alpha, rhoOver2, maxIterations)
+doTabuSearchMI <- function(S, distanceMatrix, alpha = 15L, rhoOver2 = 1, maxIterations = 1000L) {
+    .Call(`_mdp_doTabuSearchMI`, S, distanceMatrix, alpha, rhoOver2, maxIterations)
+}
+
+#' Execute a Tabu Search in the neighborhood of Solution S (Max Losts)
+#' @param \code{S} initial solution
+#' @param \code{distanceMatrix} Square and symmetric distance matrix
+#' @return Best solution of local tabu search 
+#' @examples
+#' dotabuSearch()
+doTabuSearchML <- function(S, distanceMatrix, alpha = 15L, rhoOver2 = 1, lostMaxIterations = 1000L) {
+    .Call(`_mdp_doTabuSearchML`, S, distanceMatrix, alpha, rhoOver2, lostMaxIterations)
+}
+
+#' MAMDP population update
+#' @param \code{S} population candidate
+#' @param \code{Population} population to be updated
+#' @return New population 
+#' @examples
+#' updatePopulation()
+updatePopulationMAMDP <- function(S, Population, distanceMatrix, beta = 0.6) {
+    .Call(`_mdp_updatePopulation`, S, Population, distanceMatrix, beta)
 }
 
 #' Rank based pool population update
@@ -86,7 +106,7 @@ getSolutionsDistance <- function(S0, S1) {
 #' Distance between a individual and a population;
 #' @details Distance between to individuals in population: min(m - sum(S0XS), S in Population);
 #' @param \code{S0} Individual.
-#' @param \code{Population}.
+#' @param \code{Population} Target Population.
 #' @return A int, min distance between a indivitual and a population.
 #' @export 
 getSolutionToPopulationDistance <- function(S0, Population) {
@@ -96,7 +116,7 @@ getSolutionToPopulationDistance <- function(S0, Population) {
 #' Average distance between a individual and its population;
 #' @details Average distance between a individual and other elements in population: mean(m - sum(S0XS), S in Population, S not i);
 #' @param \code{S0} Individual.
-#' @param \code{Population}.
+#' @param \code{Population} Target Population.
 #' @return A int, min distance between a indivitual and a population.
 #' @export 
 getAverageDistanceToPopulation <- function(S0, Population) {
@@ -106,10 +126,20 @@ getAverageDistanceToPopulation <- function(S0, Population) {
 #' Average distance between a individual and its population (by index);
 #' @details Average distance between a individual and other elements in population: mean(m - sum(S0XS), S in Population, S not i);
 #' @param \code{S0} Individual.
-#' @param \code{Population}.
+#' @param \code{Population} Target Population.
 #' @return A int, min distance between a indivitual and a population.
 #' @export 
 getAverageDistanceToPopulationByIndex <- function(index, Population) {
     .Call(`_mdp_getAverageDistanceToPopulationByIndex`, index, Population)
+}
+
+#' Distance between a individual and a population by index;
+#' @details Distance between to individuals in population: min(m - sum(S0XS), S in Population);
+#' @param \code{S0} Individual.
+#' @param \code{Population} Target Population.
+#' @return A int, min distance between a indivitual and a population.
+#' @export 
+getSolutionToPopulationDistanceByIndex <- function(index, Population) {
+    .Call(`_mdp_getSolutionToPopulationDistanceByIndex`, index, Population)
 }
 

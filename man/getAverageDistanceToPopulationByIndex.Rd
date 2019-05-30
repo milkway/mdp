@@ -8,6 +8,8 @@ getAverageDistanceToPopulationByIndex(index, Population)
 }
 \arguments{
 \item{\code{S0}}{Individual.}
+
+\item{\code{Population}}{Target Population.}
 }
 \value{
 A int, min distance between a indivitual and a population.

@@ -10,10 +10,14 @@
 /*********************
  * Functions Headers *
  *********************/
+// Scale Function used in population update
+arma::vec Amamdp(arma::vec input);
 // Distance between to individuals;
 int getSolutionsDistance(const arma::uvec& S0, const arma::uvec& S1);
 // Distance between individual and a population;
 int getSolutionToPopulationDistance(const arma::uvec& S0, const arma::umat& Population);
+// Distance between individual and a population by index;
+int getSolutionToPopulationDistanceByIndex(int index, const arma::umat& Population);
 // Get average distance between individual and its population;
 int getAverageDistanceToPopulation(const arma::uvec& S0, const arma::umat& Population);
 // Get average distance between individual and its population by individual index;
@@ -28,14 +32,16 @@ std::pair<int, double>  findBestPopFitness(const arma::umat& Population, const a
 arma::uvec doCrossOver(arma::uvec S_a, arma::uvec S_b, const arma::mat& distanceMatrix); 
 // Backbone Cross Over between S_a and S_b 
 arma::umat doBackboneCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, const arma::mat& distanceMatrix); 
-// Execute a Tabu Search in the neighborhood of Solution S
-arma::uvec doTabuSearch(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int maxIterations);
+// Execute a Tabu Search in the neighborhood of Solution S (MaxIter Criterium)
+arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int maxIterations);
+// Execute a Tabu Search in the neighborhood of Solution S (LostMax Criterium)
+arma::uvec doTabuSearchML(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int lostmaxIterations);
 // Pool initialization 
 arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier);   
 // Opposition Based Pool Initialize()
 arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier);   
 // update population 
-arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix);   
+arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);   
 // Rank based update population 
 arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);
 // Hao's Memetic Algorithm for Maximum Diversity Problem
@@ -126,14 +132,14 @@ arma::umat doBackboneCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, con
 } 
 
 
-//' Execute a Tabu Search in the neighborhood of Solution S
+//' Execute a Tabu Search in the neighborhood of Solution S (Max Iterations)
 //' @param \code{S} initial solution
 //' @param \code{distanceMatrix} Square and symmetric distance matrix
 //' @return Best solution of local tabu search 
 //' @examples
 //' dotabuSearch()
 // [[Rcpp::export]]
-arma::uvec doTabuSearch(arma::uvec S, const arma::mat& distanceMatrix, int alpha = 15, double rhoOver2 = 1, int maxIterations = 1000)
+arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alpha = 15, double rhoOver2 = 1, int maxIterations = 1000)
 {
   arma::uvec alphaMultiplier = {1, 2, 1, 4, 1, 2, 1, 8, 1, 2, 1, 4, 1, 2, 1};
   double dmax = distanceMatrix.max(); // Max distance between two nodes
@@ -196,11 +202,108 @@ arma::uvec doTabuSearch(arma::uvec S, const arma::mat& distanceMatrix, int alpha
   return(BestSoFar);  
 }
 
-// Execute a Tabu Search in the neighborhood of Solution S
-arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix)
+//' Execute a Tabu Search in the neighborhood of Solution S (Max Losts)
+//' @param \code{S} initial solution
+//' @param \code{distanceMatrix} Square and symmetric distance matrix
+//' @return Best solution of local tabu search 
+//' @examples
+//' dotabuSearch()
+// [[Rcpp::export]]
+arma::uvec doTabuSearchML(arma::uvec S, const arma::mat& distanceMatrix, int alpha = 15, double rhoOver2 = 1, int lostMaxIterations = 1000)
 {
-  arma::umat newPopulation; 
+  arma::uvec alphaMultiplier = {1, 2, 1, 4, 1, 2, 1, 8, 1, 2, 1, 4, 1, 2, 1};
+  double dmax = distanceMatrix.max(); // Max distance between two nodes
+  arma::uvec BestSoFar(S);
+  double fitness = getBinaryTourFitness(S, distanceMatrix);
+  double BestFitnessSoFar = fitness; 
+  int lostIterCount = 0;
+  int N = distanceMatrix.n_cols;
+  arma::uvec Tenure(N, arma::fill::zeros); // Tenure List
+  while(lostIterCount < lostMaxIterations)
+  {
+    // Find p_i, i in (1, N), and min(p_i) ---------------------
+    arma::vec p = distanceMatrix*S;
+    double dMinInS  = arma::min(p.elem(arma::find(S == 1)));
+    double dMaxOutS = arma::max(p.elem(arma::find(S == 0)));
+    //---------------------------------------------------------
+    // Find X, Y, Delta, u and v
+    arma::uvec X = (p <=  dMinInS + rhoOver2*dmax) % S;
+    arma::uvec Y = (p >= dMaxOutS - rhoOver2*dmax) % (1 - S);
+    arma::uvec NC_X = arma::find(X == 1);
+    arma::uvec NC_Y = arma::find(Y == 1);
+    // arma::mat delta(NC_X.size(), NC_Y.size(), arma::fill::zeros);
+    // (OPENMP)
+    /////
+    arma::mat delta = -distanceMatrix(NC_X, NC_Y);
+    delta.each_col() -= p(NC_X);
+    delta.each_row() += p(NC_Y).t();
+    ////
+    // #pragma omp parallel for schedule(dynamic)
+    // for(int j = 0; j  < NC_Y.size(); ++j)
+    //   for(int i = 0; i < NC_X.size(); ++i)
+    //     delta(i,j) = p(NC_Y(j)) - p(NC_X(i)) - distanceMatrix(NC_X(i),NC_Y(j));
+    double bestDelta = delta.max();
+    //arma::uvec max_shuffled = (arma::shuffle(arma::find(delta == bestDelta)));
+    arma::uvec maxValues = arma::find(delta == bestDelta);
+    int randMax = maxValues(arma::randi(arma::distr_param(0,maxValues.size()-1)));
+    int u = NC_X(randMax % NC_X.size());
+    int v = NC_Y(randMax / NC_X.size());
+    // Swap u and x if admissible
+    if (((u != v) &&         \
+        (Tenure(u) == 0) &&  \
+        (Tenure(v) == 0)) || \
+        (BestFitnessSoFar < (fitness + bestDelta))){
+      S(u) = 0;
+      S(v) = 1;
+      fitness += bestDelta;
+      int index = (int)std::floor(15*(((double)(lostIterCount%1500))/1500.0));
+      Tenure(u) = alpha*alphaMultiplier(index);
+      Tenure(v) = int(0.7*Tenure(u));
+    }
+    if (BestFitnessSoFar < fitness){
+      BestSoFar = S;
+      BestFitnessSoFar = fitness;
+      lostIterCount = 0;
+    } else {
+      lostIterCount++;
+    }
+    //---------------------------------------------------------
+    Tenure.elem( find(Tenure > 0.5) ) -= 1;
+    //Rprintf("\nBest = %3.2f, S = %3.2f", BestFitnessSoFar, fitness);
+  }
+  return(BestSoFar);  
+}
+
+
+//' MAMDP population update
+//' @param \code{S} population candidate
+//' @param \code{Population} population to be updated
+//' @return New population 
+//' @examples
+//' updatePopulation()
+// [[Rcpp::export(updatePopulationMAMDP)]]
+arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta = 0.6){
+  int P = Population.n_cols;
+  int N = S.size();
+  arma::umat newPopulation(N, P + 1, arma::fill::zeros);
+  newPopulation.cols(0, P-1) = Population;
+  newPopulation.col(P) = S;
+  arma::vec fitness(P+1, arma::fill::zeros);
+  arma::vec distance(P+1, arma::fill::zeros);
+  for(int i = 0; i < P+1; i++){
+    fitness(i) = getBinaryTourFitness(newPopulation.col(i), distanceMatrix);
+    distance(i) = getSolutionToPopulationDistanceByIndex(i, newPopulation);
+  }
+  arma::vec score = beta*(Amamdp(fitness)) + (1-beta)*(Amamdp(distance));
+  newPopulation.shed_col(arma::index_min(score));
   return(newPopulation); 
+}
+
+//Normalize Auxiliary function
+arma::vec Amamdp(arma::vec input){
+  double max_in = arma::max(input);
+  double min_in = arma::min(input);
+  return((input - min_in)/(max_in - min_in + 1));
 }
 
 
@@ -269,8 +372,8 @@ arma::uvec memeticAlgorithm(const arma::mat& distanceMatrix, int tourSize, int p
        arma::uvec  rearCandidate(N, arma::fill::zeros);
        frontCandidate.elem(frontTour) += 1;
         rearCandidate.elem(rearTour)  += 1;
-       frontCandidate = doTabuSearch(frontCandidate, distanceMatrix, 15, 1, maxIterations);
-       rearCandidate  = doTabuSearch(rearCandidate, distanceMatrix, 15, 1, maxIterations);
+       frontCandidate = doTabuSearchMI(frontCandidate, distanceMatrix, 15, 1, maxIterations);
+       rearCandidate  = doTabuSearchMI(rearCandidate, distanceMatrix, 15, 1, maxIterations);
        double frontFitness = getBinaryTourFitness(frontCandidate, distanceMatrix);
        double rearFitness = getBinaryTourFitness(rearCandidate, distanceMatrix);
        if (frontFitness >= rearFitness){
@@ -298,7 +401,7 @@ arma::uvec memeticAlgorithm(const arma::mat& distanceMatrix, int tourSize, int p
        }
      }  
      
-     if (flag > 100) {
+     if (flag > 10*populationSize) {
        Rcpp::Rcout << "Houston, we have a problem. Not that much diversity." << std::endl; 
        break;
      }
@@ -332,7 +435,7 @@ arma::uvec memeticAlgorithm(const arma::mat& distanceMatrix, int tourSize, int p
        arma::uvec tour = nodes.subvec(0, tourSize - 1);
        arma::uvec candidate(N, arma::fill::zeros);
        candidate.elem(tour) += 1;
-       macroPopulation.col(i) = doTabuSearch(candidate, distanceMatrix, 15, 1, maxIterations);
+       macroPopulation.col(i) = doTabuSearchMI(candidate, distanceMatrix, 15, 1, maxIterations);
        populationFitness(i) = getBinaryTourFitness(candidate, distanceMatrix);
      }
      arma::uvec best_index = sort_index(populationFitness, "descend");
@@ -352,7 +455,7 @@ arma::uvec memeticAlgorithm(const arma::mat& distanceMatrix, int tourSize, int p
        }
      }  
      
-     if (flag > 100) {
+     if (flag >  10*populationSize) {
        Rcpp::Rcout << "Houston, we have a problem. Not that much diversity." << std::endl; 
        break;
      }
@@ -415,7 +518,7 @@ int getSolutionsDistance(const arma::uvec& S0, const arma::uvec& S1){
 //' Distance between a individual and a population;
 //' @details Distance between to individuals in population: min(m - sum(S0XS), S in Population);
 //' @param \code{S0} Individual.
-//' @param \code{Population}.
+//' @param \code{Population} Target Population.
 //' @return A int, min distance between a indivitual and a population.
 //' @export 
 // [[Rcpp::export]]
@@ -432,7 +535,7 @@ int getSolutionToPopulationDistance(const arma::uvec& S0, const arma::umat& Popu
 //' Average distance between a individual and its population;
 //' @details Average distance between a individual and other elements in population: mean(m - sum(S0XS), S in Population, S not i);
 //' @param \code{S0} Individual.
-//' @param \code{Population}.
+//' @param \code{Population} Target Population.
 //' @return A int, min distance between a indivitual and a population.
 //' @export 
 // [[Rcpp::export]]
@@ -448,7 +551,7 @@ int getAverageDistanceToPopulation(const arma::uvec& S0, const arma::umat& Popul
 //' Average distance between a individual and its population (by index);
 //' @details Average distance between a individual and other elements in population: mean(m - sum(S0XS), S in Population, S not i);
 //' @param \code{S0} Individual.
-//' @param \code{Population}.
+//' @param \code{Population} Target Population.
 //' @return A int, min distance between a indivitual and a population.
 //' @export 
 // [[Rcpp::export]]
@@ -459,4 +562,21 @@ int getAverageDistanceToPopulationByIndex(int index, const arma::umat& Populatio
   auto M(Population);
   M.each_col() %= M.col(index); // Multiply each individual by S0, element wise.  
   return((arma::sum(m - arma::sum(M,0)))/(Population.n_cols - 1));
+}
+
+//' Distance between a individual and a population by index;
+//' @details Distance between to individuals in population: min(m - sum(S0XS), S in Population);
+//' @param \code{S0} Individual.
+//' @param \code{Population} Target Population.
+//' @return A int, min distance between a indivitual and a population.
+//' @export 
+// [[Rcpp::export]]
+int getSolutionToPopulationDistanceByIndex(int index, const arma::umat& Population){
+  int m = arma::sum(Population.col(0));
+  if (!((index >= 0)&&(index < Population.n_cols)))
+    Rcpp::stop("Sorry. Here we count from 0 to N-1");
+  auto M(Population);
+  M.each_col() %= M.col(index); // Multiply each individual by S0, element wise.  
+  M.shed_col(index);
+  return(arma::min(m - arma::sum(M,0)));
 }

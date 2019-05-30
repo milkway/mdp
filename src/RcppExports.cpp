@@ -47,9 +47,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// doTabuSearch
-arma::uvec doTabuSearch(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int maxIterations);
-RcppExport SEXP _mdp_doTabuSearch(SEXP SSEXP, SEXP distanceMatrixSEXP, SEXP alphaSEXP, SEXP rhoOver2SEXP, SEXP maxIterationsSEXP) {
+// doTabuSearchMI
+arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int maxIterations);
+RcppExport SEXP _mdp_doTabuSearchMI(SEXP SSEXP, SEXP distanceMatrixSEXP, SEXP alphaSEXP, SEXP rhoOver2SEXP, SEXP maxIterationsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -58,7 +58,36 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type rhoOver2(rhoOver2SEXP);
     Rcpp::traits::input_parameter< int >::type maxIterations(maxIterationsSEXP);
-    rcpp_result_gen = Rcpp::wrap(doTabuSearch(S, distanceMatrix, alpha, rhoOver2, maxIterations));
+    rcpp_result_gen = Rcpp::wrap(doTabuSearchMI(S, distanceMatrix, alpha, rhoOver2, maxIterations));
+    return rcpp_result_gen;
+END_RCPP
+}
+// doTabuSearchML
+arma::uvec doTabuSearchML(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int lostMaxIterations);
+RcppExport SEXP _mdp_doTabuSearchML(SEXP SSEXP, SEXP distanceMatrixSEXP, SEXP alphaSEXP, SEXP rhoOver2SEXP, SEXP lostMaxIterationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type rhoOver2(rhoOver2SEXP);
+    Rcpp::traits::input_parameter< int >::type lostMaxIterations(lostMaxIterationsSEXP);
+    rcpp_result_gen = Rcpp::wrap(doTabuSearchML(S, distanceMatrix, alpha, rhoOver2, lostMaxIterations));
+    return rcpp_result_gen;
+END_RCPP
+}
+// updatePopulation
+arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);
+RcppExport SEXP _mdp_updatePopulation(SEXP SSEXP, SEXP PopulationSEXP, SEXP distanceMatrixSEXP, SEXP betaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type Population(PopulationSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(updatePopulation(S, Population, distanceMatrix, beta));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -191,12 +220,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getSolutionToPopulationDistanceByIndex
+int getSolutionToPopulationDistanceByIndex(int index, const arma::umat& Population);
+RcppExport SEXP _mdp_getSolutionToPopulationDistanceByIndex(SEXP indexSEXP, SEXP PopulationSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type index(indexSEXP);
+    Rcpp::traits::input_parameter< const arma::umat& >::type Population(PopulationSEXP);
+    rcpp_result_gen = Rcpp::wrap(getSolutionToPopulationDistanceByIndex(index, Population));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mdp_binarymodel", (DL_FUNC) &_mdp_binarymodel, 5},
     {"_mdp_doCrossOver", (DL_FUNC) &_mdp_doCrossOver, 3},
     {"_mdp_doBackboneCrossOver", (DL_FUNC) &_mdp_doBackboneCrossOver, 3},
-    {"_mdp_doTabuSearch", (DL_FUNC) &_mdp_doTabuSearch, 5},
+    {"_mdp_doTabuSearchMI", (DL_FUNC) &_mdp_doTabuSearchMI, 5},
+    {"_mdp_doTabuSearchML", (DL_FUNC) &_mdp_doTabuSearchML, 5},
+    {"_mdp_updatePopulation", (DL_FUNC) &_mdp_updatePopulation, 4},
     {"_mdp_updatePopulationByRank", (DL_FUNC) &_mdp_updatePopulationByRank, 4},
     {"_mdp_memeticAlgorithm", (DL_FUNC) &_mdp_memeticAlgorithm, 3},
     {"_mdp_initializeOBP", (DL_FUNC) &_mdp_initializeOBP, 5},
@@ -207,6 +250,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mdp_getSolutionToPopulationDistance", (DL_FUNC) &_mdp_getSolutionToPopulationDistance, 2},
     {"_mdp_getAverageDistanceToPopulation", (DL_FUNC) &_mdp_getAverageDistanceToPopulation, 2},
     {"_mdp_getAverageDistanceToPopulationByIndex", (DL_FUNC) &_mdp_getAverageDistanceToPopulationByIndex, 2},
+    {"_mdp_getSolutionToPopulationDistanceByIndex", (DL_FUNC) &_mdp_getSolutionToPopulationDistanceByIndex, 2},
     {NULL, NULL, 0}
 };
 
