@@ -27,7 +27,7 @@ double getBinaryTourFitness(const arma::uvec& Tour, const arma::mat& distanceMat
 // Get tour fitness
 double getTourFitness(const arma::uvec& Tour, const arma::mat& Distances);
 // Best Fitness and solution index of population
-std::pair<int, double>  findBestPopFitness(const arma::umat& Population, const arma::mat& distanceMatrix);
+int  findBestPopFitness(const arma::umat& Population, const arma::mat& distanceMatrix);
 // Cross Over between S_a and S_b 
 arma::uvec doCrossOver(arma::uvec S_a, arma::uvec S_b, const arma::mat& distanceMatrix); 
 // Backbone Cross Over between S_a and S_b 
@@ -44,21 +44,31 @@ arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int popu
 arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);   
 // Rank based update population 
 arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);
-// Hao's Memetic Algorithm for Maximum Diversity Problem
-arma::uvec memeticAlgorithm(const arma::mat& distanceMatrix, int tourSize, int populationSize);   
+// Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem
+arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxInterations);   
+// Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem
+arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations);   
+// Hao's Diversification-driven Memetic Algorith for Maximum Diversity Problem 
+arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p);   
+
 /*****************************
  * End of  Functions Headers *
  *****************************/
   
 
-// Best Fitness and solution index of population
-std::pair<int, double>  findBestPopFitness(const arma::umat& Population, const arma::mat& distanceMatrix)
-{
-  std::pair <int, double> pairIndexFitness; 
-  
-  pairIndexFitness.first = 0; 
-  pairIndexFitness.second = .1; 
-  return(pairIndexFitness);
+//' Best Fitness and solution index of population
+//' @param \code{Population} to fit.
+//' @param  \code{distanceMatrix} Square and symmetric distance matrix 
+//' @return A baby 
+//' @examples
+//' findBestPopFitness()
+// [[Rcpp::export]]
+int  findBestPopFitness(const arma::umat& Population, const arma::mat& distanceMatrix){
+  int P = Population.n_cols;
+  arma::vec fitness(P, arma::fill::zeros);
+  for(int i = 0; i < P; i++)
+    fitness(i) = getBinaryTourFitness(Population.col(i), distanceMatrix);
+  return(arma::index_max(fitness));
 }
 
  
@@ -332,16 +342,6 @@ arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arm
   return(newPopulation); 
 }
 
-
-/*
- * Hao's Memetic Algorithm for Maximum Diversity Problem 
- */
-// [[Rcpp::export]]
-arma::uvec memeticAlgorithm(const arma::mat& distanceMatrix, int tourSize, int populationSize)   
-{
-  arma::uvec Tour;
-  return(Tour);
-}
  
  //' Opposition Based Population initialization 
  //' @details Get the initial populatio
@@ -580,3 +580,56 @@ int getSolutionToPopulationDistanceByIndex(int index, const arma::umat& Populati
   M.shed_col(index);
   return(arma::min(m - arma::sum(M,0)));
 }
+
+/*
+ * Main routines for MAMDP, OBMA and DMAMDP
+ */
+
+//' Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem
+//' @details Get over it!
+//' @param \code{distanceMatrix} Symmetric matrix.
+//' @param \code{tourSize} Subset size of nodes.
+//' @param \code{populationSize} Number of individual in population.
+//' @param \code{maxIterations} for the tabu search.
+//' @return A better person.
+//' @export 
+// [[Rcpp::export]]
+arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxInterations){
+  /// Initialize population
+  arma::uvec S;
+  return(S);
+}   
+
+
+
+//' Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem
+//' @details Get over it!
+//' @param \code{distanceMatrix} Symmetric matrix.
+//' @param \code{tourSize} Subset size of nodes.
+//' @param \code{populationSize} Number of individual in population.
+//' @param \code{maxIterations} for the tabu search.
+//' @return A better man.
+//' @export 
+// [[Rcpp::export]]
+arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations){
+  arma::uvec S;
+  return(S);
+}   
+
+
+//' Hao's Diversification-driven Memetic Algorith for Maximum Diversity Problem 
+//' @details Get over it!
+//' @param \code{distanceMatrix} Symmetric matrix.
+//' @param \code{tourSize} Subset size of nodes.
+//' @param \code{populationSize} Number of individual in population.
+//' @param \code{lostMaxIterations} for the tabu search.
+//' @param \code{maxTime} Time limit for execution.
+//' @param \code{p} Probability of get laid. Otherwise go fish in random pool.
+//' @return A better man.
+//' @export 
+// [[Rcpp::export]]
+arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p){
+  arma::uvec S;
+  return(S);
+}   
+                    

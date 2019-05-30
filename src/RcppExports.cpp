@@ -21,6 +21,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// findBestPopFitness
+int findBestPopFitness(const arma::umat& Population, const arma::mat& distanceMatrix);
+RcppExport SEXP _mdp_findBestPopFitness(SEXP PopulationSEXP, SEXP distanceMatrixSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::umat& >::type Population(PopulationSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
+    rcpp_result_gen = Rcpp::wrap(findBestPopFitness(Population, distanceMatrix));
+    return rcpp_result_gen;
+END_RCPP
+}
 // doCrossOver
 arma::uvec doCrossOver(arma::uvec S_a, arma::uvec S_b, const arma::mat& distanceMatrix);
 RcppExport SEXP _mdp_doCrossOver(SEXP S_aSEXP, SEXP S_bSEXP, SEXP distanceMatrixSEXP) {
@@ -102,19 +114,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
     Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
     rcpp_result_gen = Rcpp::wrap(updatePopulationByRank(S, Population, distanceMatrix, beta));
-    return rcpp_result_gen;
-END_RCPP
-}
-// memeticAlgorithm
-arma::uvec memeticAlgorithm(const arma::mat& distanceMatrix, int tourSize, int populationSize);
-RcppExport SEXP _mdp_memeticAlgorithm(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
-    Rcpp::traits::input_parameter< int >::type tourSize(tourSizeSEXP);
-    Rcpp::traits::input_parameter< int >::type populationSize(populationSizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(memeticAlgorithm(distanceMatrix, tourSize, populationSize));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -232,16 +231,60 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// mamdp
+arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxInterations);
+RcppExport SEXP _mdp_mamdp(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxInterationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type tourSize(tourSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type populationSize(populationSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type maxInterations(maxInterationsSEXP);
+    rcpp_result_gen = Rcpp::wrap(mamdp(distanceMatrix, tourSize, populationSize, maxInterations));
+    return rcpp_result_gen;
+END_RCPP
+}
+// obma
+arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations);
+RcppExport SEXP _mdp_obma(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxIterationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type tourSize(tourSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type populationSize(populationSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type maxIterations(maxIterationsSEXP);
+    rcpp_result_gen = Rcpp::wrap(obma(distanceMatrix, tourSize, populationSize, maxIterations));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dmamdp
+arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p);
+RcppExport SEXP _mdp_dmamdp(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxTimeSEXP, SEXP maxLostIterationsSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type tourSize(tourSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type populationSize(populationSizeSEXP);
+    Rcpp::traits::input_parameter< double >::type maxTime(maxTimeSEXP);
+    Rcpp::traits::input_parameter< int >::type maxLostIterations(maxLostIterationsSEXP);
+    Rcpp::traits::input_parameter< double >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmamdp(distanceMatrix, tourSize, populationSize, maxTime, maxLostIterations, p));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mdp_binarymodel", (DL_FUNC) &_mdp_binarymodel, 5},
+    {"_mdp_findBestPopFitness", (DL_FUNC) &_mdp_findBestPopFitness, 2},
     {"_mdp_doCrossOver", (DL_FUNC) &_mdp_doCrossOver, 3},
     {"_mdp_doBackboneCrossOver", (DL_FUNC) &_mdp_doBackboneCrossOver, 3},
     {"_mdp_doTabuSearchMI", (DL_FUNC) &_mdp_doTabuSearchMI, 5},
     {"_mdp_doTabuSearchML", (DL_FUNC) &_mdp_doTabuSearchML, 5},
     {"_mdp_updatePopulation", (DL_FUNC) &_mdp_updatePopulation, 4},
     {"_mdp_updatePopulationByRank", (DL_FUNC) &_mdp_updatePopulationByRank, 4},
-    {"_mdp_memeticAlgorithm", (DL_FUNC) &_mdp_memeticAlgorithm, 3},
     {"_mdp_initializeOBP", (DL_FUNC) &_mdp_initializeOBP, 5},
     {"_mdp_initializePool", (DL_FUNC) &_mdp_initializePool, 5},
     {"_mdp_getBinaryTourFitness", (DL_FUNC) &_mdp_getBinaryTourFitness, 2},
@@ -251,6 +294,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mdp_getAverageDistanceToPopulation", (DL_FUNC) &_mdp_getAverageDistanceToPopulation, 2},
     {"_mdp_getAverageDistanceToPopulationByIndex", (DL_FUNC) &_mdp_getAverageDistanceToPopulationByIndex, 2},
     {"_mdp_getSolutionToPopulationDistanceByIndex", (DL_FUNC) &_mdp_getSolutionToPopulationDistanceByIndex, 2},
+    {"_mdp_mamdp", (DL_FUNC) &_mdp_mamdp, 4},
+    {"_mdp_obma", (DL_FUNC) &_mdp_obma, 4},
+    {"_mdp_dmamdp", (DL_FUNC) &_mdp_dmamdp, 6},
     {NULL, NULL, 0}
 };
 

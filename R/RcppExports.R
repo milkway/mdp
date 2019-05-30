@@ -5,6 +5,16 @@ binarymodel <- function(distances, m, MAX_TIME = 10, THREADS = 4L, verbose = FAL
     .Call(`_mdp_binarymodel`, distances, m, MAX_TIME, THREADS, verbose)
 }
 
+#' Best Fitness and solution index of population
+#' @param \code{Population} to fit.
+#' @param  \code{distanceMatrix} Square and symmetric distance matrix 
+#' @return A baby 
+#' @examples
+#' findBestPopFitness()
+findBestPopFitness <- function(Population, distanceMatrix) {
+    .Call(`_mdp_findBestPopFitness`, Population, distanceMatrix)
+}
+
 #' Cross Over between S_a and S_b 
 #' @param \code{S_a} Parent A
 #' @param \code{S_b} Parent B
@@ -65,10 +75,6 @@ updatePopulationMAMDP <- function(S, Population, distanceMatrix, beta = 0.6) {
 #' updatePopulationByRank()
 updatePopulationByRank <- function(S, Population, distanceMatrix, beta = 0.6) {
     .Call(`_mdp_updatePopulationByRank`, S, Population, distanceMatrix, beta)
-}
-
-memeticAlgorithm <- function(distanceMatrix, tourSize, populationSize) {
-    .Call(`_mdp_memeticAlgorithm`, distanceMatrix, tourSize, populationSize)
 }
 
 initializeOPB <- function(distanceMatrix, tourSize, populationSize = 10L, maxIterations = 100L, multiplier = 2L) {
@@ -141,5 +147,43 @@ getAverageDistanceToPopulationByIndex <- function(index, Population) {
 #' @export 
 getSolutionToPopulationDistanceByIndex <- function(index, Population) {
     .Call(`_mdp_getSolutionToPopulationDistanceByIndex`, index, Population)
+}
+
+#' Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem
+#' @details Get over it!
+#' @param \code{distanceMatrix} Symmetric matrix.
+#' @param \code{tourSize} Subset size of nodes.
+#' @param \code{populationSize} Number of individual in population.
+#' @param \code{maxIterations} for the tabu search.
+#' @return A better person.
+#' @export 
+mamdp <- function(distanceMatrix, tourSize, populationSize, maxInterations) {
+    .Call(`_mdp_mamdp`, distanceMatrix, tourSize, populationSize, maxInterations)
+}
+
+#' Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem
+#' @details Get over it!
+#' @param \code{distanceMatrix} Symmetric matrix.
+#' @param \code{tourSize} Subset size of nodes.
+#' @param \code{populationSize} Number of individual in population.
+#' @param \code{maxIterations} for the tabu search.
+#' @return A better man.
+#' @export 
+obma <- function(distanceMatrix, tourSize, populationSize, maxIterations) {
+    .Call(`_mdp_obma`, distanceMatrix, tourSize, populationSize, maxIterations)
+}
+
+#' Hao's Diversification-driven Memetic Algorith for Maximum Diversity Problem 
+#' @details Get over it!
+#' @param \code{distanceMatrix} Symmetric matrix.
+#' @param \code{tourSize} Subset size of nodes.
+#' @param \code{populationSize} Number of individual in population.
+#' @param \code{lostMaxIterations} for the tabu search.
+#' @param \code{maxTime} Time limit for execution.
+#' @param \code{p} Probability of get laid. Otherwise go fish in random pool.
+#' @return A better man.
+#' @export 
+dmamdp <- function(distanceMatrix, tourSize, populationSize, maxTime, maxLostIterations, p) {
+    .Call(`_mdp_dmamdp`, distanceMatrix, tourSize, populationSize, maxTime, maxLostIterations, p)
 }
 
