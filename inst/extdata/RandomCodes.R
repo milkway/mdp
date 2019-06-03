@@ -18,8 +18,7 @@ distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.1.
 rst <- binarymodel(distances, m = 50, MAX_TIME = 600, THREADS = 8,  verbose = TRUE)
 
 N <- 500
-
-distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.1.a.n500m50.rds"))
+distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.21.a.n2000m200.rds"))
 distances.d <- as.dist(distances)
 cluster.mdp <- hclust(distances.d)
 tour <- 
@@ -52,23 +51,23 @@ apply(P2, 2, function(x){getBinaryTourFitness(x, distances)})
 #######
 
 S <- mamdp(distanceMatrix = distances, 
-           tourSize = 50, 
+           tourSize = 200, 
            populationSize = 10, 
-           maxIterations = 100, 
+           maxIterations = 1000, 
            maxTime = 20)
 getBinaryTourFitness(S, distances)
 
 S <- obma(distanceMatrix = distances, 
-           tourSize = 50, 
+           tourSize = 200, 
            populationSize = 10, 
-           maxIterations = 100, 
+           maxIterations = 1000, 
            maxTime = 20)
 getBinaryTourFitness(S, distances)
 
 S <- dmamdp(distanceMatrix = distances, 
-          tourSize = 50, 
+          tourSize = 200, 
           populationSize = 10, 
-          lostMaxIterations = 100, 
+          lostMaxIterations = 1000, 
           maxTime = 20,
-          p = .5)
+          p = .6)
 getBinaryTourFitness(S, distances)

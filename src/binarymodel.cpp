@@ -1,3 +1,6 @@
+/*
+ * André Leite <leite@de.ufpe.br>
+ */
 #include "RcppArmadillo.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -5,6 +8,17 @@
 #include <sstream>
 #include <chrono>
 
+
+//' Try to solve MDP with binary exact model
+//' @param \code{distanceMatrix} Square and symmetric distance matrix 
+//' @param \code{m} Tour size
+//' @param \code{MAX_TIME} Its time to stop folks.
+//' @param \code{THREADS} Number of threads to be used
+//' @param \code{verbose} true or false
+//' @return A baby 
+//' @examples
+//' binarymodel(...)
+//' @export 
 // [[Rcpp::export]]
 Rcpp::List binarymodel(const arma::mat & distances, int m, double MAX_TIME = 10, int THREADS = 4, bool verbose = false) 
     {

@@ -3,11 +3,12 @@ Type: Package
 Title: What the package does (short line)
 Version: 1.0
 Date: 2019-05-24
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Author: André Leite <leite@de.ufpe.br>
+Maintainer: André Leite <leite@de.ufpe.br>
+Description: Toolbox for Maximum Diversity Problem (MDP)
 License: What license is it under?
 Imports: Rcpp (>= 1.0.1)
 Depends: tidyverse
 LinkingTo: Rcpp, RcppArmadillo
+Encoding: UTF-8
 RoxygenNote: 6.1.1

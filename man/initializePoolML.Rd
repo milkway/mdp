@@ -8,7 +8,7 @@ initializePoolML(distanceMatrix, tourSize, populationSize = 10L,
   lostMaxIterations = 100L, multiplier = 3L)
 }
 \arguments{
-\item{\code{Tour}{Size} Thats it.}
+\item{\code{TourSize}}{Thats it.}
 
 \item{\code{Distances}}{Distance matrix}
 
