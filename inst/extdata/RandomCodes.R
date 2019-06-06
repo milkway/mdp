@@ -55,19 +55,21 @@ S <- mamdp(distanceMatrix = distances,
            populationSize = 10, 
            maxIterations = 1000, 
            maxTime = 20)
+
 getBinaryTourFitness(S, distances)
 
 S <- obma(distanceMatrix = distances, 
            tourSize = 200, 
            populationSize = 10, 
-           maxIterations = 1000, 
-           maxTime = 20)
+           maxIterations = 10, 
+           maxTime = 50)
+
 getBinaryTourFitness(S, distances)
 
 S <- dmamdp(distanceMatrix = distances, 
           tourSize = 200, 
           populationSize = 10, 
-          lostMaxIterations = 1000, 
+          lostMaxIterations = 10, 
           maxTime = 20,
           p = .6)
 getBinaryTourFitness(S, distances)

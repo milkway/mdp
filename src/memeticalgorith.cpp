@@ -51,11 +51,11 @@ arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat
 // Rank based update population 
 arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);
 // Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem
-arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);   
+Rcpp::List  mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);   
 // Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem
-arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);   
+Rcpp::List  obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);   
 // Hao's Diversification-driven Memetic Algorith for Maximum Diversity Problem 
-arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p);   
+Rcpp::List dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p);   
 
 /*****************************
  * End of  Functions Headers *
@@ -75,11 +75,12 @@ arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationS
 //' @return A better person.
 //' @export 
 // [[Rcpp::export]]
-arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime = 60){
+Rcpp::List  mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime = 60){
   //0. Start time
   auto start = std::chrono::steady_clock::now();
   std::chrono::duration<double> diff;
   double time_elapsed = 0;
+  double time_best = 0;
   //1. Initialize population
   arma::umat population = initializePool(distanceMatrix, tourSize, populationSize, maxIterations, 3);
   //2. Find best in population
@@ -100,14 +101,22 @@ arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSi
     if (S0Fitness > bestFitness){
       bestSolution = S0;
       bestFitness = S0Fitness;
+      auto time = std::chrono::steady_clock::now();
+      time_best = std::chrono::duration <double, std::milli> (time - start).count()/1000;
     }
     //7. Update population
     population = updatePopulation(S0, population, distanceMatrix, .6);
     auto time = std::chrono::steady_clock::now();
-    diff = time - start;
-    time_elapsed = std::chrono::duration <double, std::milli> (diff).count()/1000;
+    time_elapsed = std::chrono::duration <double, std::milli> (time - start).count()/1000;
   }
-  return(bestSolution);
+  //return(bestSolution);
+  Rcpp::DataFrame rst = Rcpp::DataFrame::create(
+    Rcpp::Named("Fitness") = bestFitness,
+    Rcpp::Named("Best") = time_best,
+    Rcpp::Named("Elapsed") = time_elapsed);
+  return Rcpp::List::create(Rcpp::Named("tour") = bestSolution,
+                            Rcpp::Named("data") = rst
+  );
 }   
 
 
@@ -121,11 +130,12 @@ arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSi
 //' @return A better man.
 //' @export 
 // [[Rcpp::export]]
-arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime = 60){
+Rcpp::List  obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime = 60){
   //0. Start time
   auto start = std::chrono::steady_clock::now();
   std::chrono::duration<double> diff;
   double time_elapsed = 0;
+  double time_best = 0;
   //1. Initialize population
   arma::umat population = initializeOBP(distanceMatrix, tourSize, populationSize, maxIterations, 3);
   //2. Find best in population
@@ -147,6 +157,8 @@ arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSiz
     if (S0Fitness > bestFitness){
       bestSolution = S0.col(0);
       bestFitness = S0Fitness;
+      auto time = std::chrono::steady_clock::now();
+      time_best = std::chrono::duration <double, std::milli> (time - start).count()/1000;
     }
     //7.1. Update population
     population = updatePopulation(S0.col(0), population, distanceMatrix, .6);
@@ -156,14 +168,22 @@ arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSiz
     if (S0Fitness > bestFitness){
       bestSolution = S0.col(1);
       bestFitness = S0Fitness;
+      auto time = std::chrono::steady_clock::now();
+      time_best = std::chrono::duration <double, std::milli> (time - start).count()/1000;
     }
     //7.2. Update population
     population = updatePopulation(S0.col(1), population, distanceMatrix, .6);
     auto time = std::chrono::steady_clock::now();
-    diff = time - start;
-    time_elapsed = std::chrono::duration <double, std::milli> (diff).count()/1000;
+    time_elapsed = std::chrono::duration <double, std::milli> (time - start).count()/1000;
   }
-  return(bestSolution);
+  //return(bestSolution);
+  Rcpp::DataFrame rst = Rcpp::DataFrame::create(
+    Rcpp::Named("Fitness") = bestFitness,
+    Rcpp::Named("Best") = time_best,
+    Rcpp::Named("Elapsed") = time_elapsed);
+  return Rcpp::List::create(Rcpp::Named("tour") = bestSolution,
+                            Rcpp::Named("data") = rst
+  );
 }   
 
 
@@ -178,11 +198,12 @@ arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSiz
 //' @return A better man.
 //' @export 
 // [[Rcpp::export]]
-arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int lostMaxIterations, double p){
+Rcpp::List dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int lostMaxIterations, double p){
   //0. Start time
   auto start = std::chrono::steady_clock::now();
   std::chrono::duration<double> diff;
   double time_elapsed = 0;
+  double time_best = 0;
   //1. Initialize population
   arma::umat population = initializePoolML(distanceMatrix, tourSize, populationSize, lostMaxIterations, 3);
   //2. Find best in population
@@ -217,6 +238,8 @@ arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationS
       if (S0Fitness > bestFitness){
         bestSolution = S0;
         bestFitness = S0Fitness;
+        auto time = std::chrono::steady_clock::now();
+        time_best = std::chrono::duration <double, std::milli> (time - start).count()/1000;
       }
       population = updatePopulation(S0, population, distanceMatrix, .6);
       arma::uvec randS = population.col(std::floor(populationSize*((double)dis(rand01))));
@@ -227,13 +250,21 @@ arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationS
     if (S0Fitness > bestFitness){
       bestSolution = S0;
       bestFitness = S0Fitness;
+      auto time = std::chrono::steady_clock::now();
+      time_best = std::chrono::duration <double, std::milli> (time - start).count()/1000;
     }
     //7. Update population
     population = updatePopulation(S0, population, distanceMatrix, .6);
     auto time = std::chrono::steady_clock::now();
-    diff = time - start;
-    time_elapsed = std::chrono::duration <double, std::milli> (diff).count()/1000;
+    time_elapsed = std::chrono::duration <double, std::milli> (time - start).count()/1000;
   }
-  return(bestSolution);
-}   
+  //return(bestSolution);
+  Rcpp::DataFrame rst = Rcpp::DataFrame::create(
+    Rcpp::Named("Fitness") = bestFitness,
+    Rcpp::Named("Best") = time_best,
+    Rcpp::Named("Elapsed") = time_elapsed);
+  return Rcpp::List::create(Rcpp::Named("tour") = bestSolution,
+                            Rcpp::Named("data") = rst
+                              );
+}
                     
