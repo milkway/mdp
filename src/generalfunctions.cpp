@@ -39,6 +39,8 @@ int  findBestPopFitness(const arma::umat& Population, const arma::mat& distanceM
 arma::uvec doCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, const arma::mat& distanceMatrix); 
 // Backbone Cross Over between S_a and S_b 
 arma::umat doBackboneCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, const arma::mat& distanceMatrix); 
+// Execute a Tabu Search in the neighborhood of Solution S  (Parallel, MaxIter Criterium)
+arma::uvec doTabuSearchParallel(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int maxIterations);
 // Execute a Tabu Search in the neighborhood of Solution S (MaxIter Criterium)
 arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int maxIterations);
 // Execute a Tabu Search in the neighborhood of Solution S (LostMax Criterium)
@@ -170,10 +172,12 @@ arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alp
   int iterCount = 0;
   int N = distanceMatrix.n_cols;
   arma::uvec Tenure(N, arma::fill::zeros); // Tenure List
+  arma::vec p = arma::sum(distanceMatrix.cols(arma::find(S == 1)),1);
   while(iterCount < maxIterations)
   {
     // Find p_i, i in (1, N), and min(p_i) ---------------------
-    arma::vec p = distanceMatrix*S;
+    //arma::vec p = distanceMatrix*S;
+    //arma::vec p = arma::sum(distanceMatrix.cols(arma::find(S == 1)),1);
     double dMinInS  = arma::min(p.elem(arma::find(S == 1)));
     double dMaxOutS = arma::max(p.elem(arma::find(S == 0)));
     //---------------------------------------------------------
@@ -206,6 +210,10 @@ arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alp
         (BestFitnessSoFar < (fitness + bestDelta))){
       S(u) = 0;
       S(v) = 1;
+      p +=  distanceMatrix.col(v) - distanceMatrix.col(u);
+      double dp = distanceMatrix(v, u);
+      p(u) += dp;
+      p(v) -= dp;
       fitness += bestDelta;
       int index = (int)std::floor(15*(((double)(iterCount%1500))/1500.0));
       Tenure(u) = alpha*alphaMultiplier(index);
@@ -240,10 +248,12 @@ arma::uvec doTabuSearchML(arma::uvec S, const arma::mat& distanceMatrix, int alp
   int lostIterCount = 0;
   int N = distanceMatrix.n_cols;
   arma::uvec Tenure(N, arma::fill::zeros); // Tenure List
+  arma::vec p = arma::sum(distanceMatrix.cols(arma::find(S == 1)),1);
   while(lostIterCount < lostMaxIterations)
   {
     // Find p_i, i in (1, N), and min(p_i) ---------------------
-    arma::vec p = distanceMatrix*S;
+    //arma::vec p = distanceMatrix*S;
+    //arma::vec p = arma::sum(distanceMatrix.cols(arma::find(S == 1)),1);
     double dMinInS  = arma::min(p.elem(arma::find(S == 1)));
     double dMaxOutS = arma::max(p.elem(arma::find(S == 0)));
     //---------------------------------------------------------
@@ -276,6 +286,10 @@ arma::uvec doTabuSearchML(arma::uvec S, const arma::mat& distanceMatrix, int alp
         (BestFitnessSoFar < (fitness + bestDelta))){
       S(u) = 0;
       S(v) = 1;
+      p +=  distanceMatrix.col(v) - distanceMatrix.col(u);
+      double dp = distanceMatrix(v, u);
+      p(u) += dp;
+      p(v) -= dp;
       fitness += bestDelta;
       int index = (int)std::floor(15*(((double)(lostIterCount%1500))/1500.0));
       Tenure(u) = alpha*alphaMultiplier(index);
@@ -362,7 +376,7 @@ arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arm
 //' @return A matrix where each column is a individual in the population
 //' @export 
 // [[Rcpp::export("initializeOPB")]] 
-arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 2){
+arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 1){
   int N = distanceMatrix.n_cols;
   if (tourSize > N/2) 
     Rcpp::stop("Not implemented yet. Try with tour size smaller than N/2.");
@@ -383,8 +397,8 @@ arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int popu
       arma::uvec  rearCandidate(N, arma::fill::zeros);
       frontCandidate.elem(frontTour) += 1;
       rearCandidate.elem(rearTour)  += 1;
-      frontCandidate = doTabuSearchMI(frontCandidate, distanceMatrix, 15, 1, maxIterations);
-      rearCandidate  = doTabuSearchMI(rearCandidate, distanceMatrix, 15, 1, maxIterations);
+      frontCandidate = doTabuSearchMI(frontCandidate, distanceMatrix, 15, 4, maxIterations);
+      rearCandidate  = doTabuSearchMI(rearCandidate, distanceMatrix, 15, 4, maxIterations);
       double frontFitness = getBinaryTourFitness(frontCandidate, distanceMatrix);
       double rearFitness = getBinaryTourFitness(rearCandidate, distanceMatrix);
       if (frontFitness >= rearFitness){
@@ -428,7 +442,7 @@ arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int popu
 //' @return A matrix where each column is a individual in the population
 //' @export 
 // [[Rcpp::export("initializePool")]] 
-arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 3){
+arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 1){
   int N = distanceMatrix.n_cols;
   // if (!distanceMatrix.is_square())
   //   Rcpp::stop("Distance Matrix must be square");
@@ -446,7 +460,7 @@ arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int pop
       arma::uvec tour = nodes.subvec(0, tourSize - 1);
       arma::uvec candidate(N, arma::fill::zeros);
       candidate.elem(tour) += 1;
-      macroPopulation.col(i) = doTabuSearchMI(candidate, distanceMatrix, 15, 1, maxIterations);
+      macroPopulation.col(i) = doTabuSearchMI(candidate, distanceMatrix, 15, 2, maxIterations);
       populationFitness(i) = getBinaryTourFitness(candidate, distanceMatrix);
     }
     arma::uvec best_index = sort_index(populationFitness, "descend");
@@ -482,7 +496,7 @@ arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int pop
 //' @return A matrix where each column is a individual in the population
 //' @export 
 // [[Rcpp::export]] 
-arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int lostMaxIterations = 100, int multiplier = 3){
+arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int lostMaxIterations = 100, int multiplier = 1){
   int N = distanceMatrix.n_cols;
   // if (!distanceMatrix.is_square())
   //   Rcpp::stop("Distance Matrix must be square");
@@ -500,7 +514,7 @@ arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int p
       arma::uvec tour = nodes.subvec(0, tourSize - 1);
       arma::uvec candidate(N, arma::fill::zeros);
       candidate.elem(tour) += 1;
-      macroPopulation.col(i) = doTabuSearchML(candidate, distanceMatrix, 15, 1, lostMaxIterations);
+      macroPopulation.col(i) = doTabuSearchML(candidate, distanceMatrix, 15, 2, lostMaxIterations);
       populationFitness(i) = getBinaryTourFitness(candidate, distanceMatrix);
     }
     arma::uvec best_index = sort_index(populationFitness, "descend");
@@ -539,6 +553,7 @@ arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int p
 double getBinaryTourFitness(const arma::uvec& Tour, const arma::mat& distanceMatrix){
   double Fitness = 0;
   unsigned n = Tour.size();
+#pragma omp parallel for reduction(+: Fitness)
   for (unsigned i = 0; i < n; i++) {
     for (auto j = i + 1; j <  n; j++) {
       Fitness += Tour(i)*Tour(j)*distanceMatrix(i, j);
@@ -643,4 +658,211 @@ int getSolutionToPopulationDistanceByIndex(int index, const arma::umat& Populati
   M.each_col() %= M.col(index); // Multiply each individual by S0, element wise.  
   M.shed_col(index);
   return(arma::min(m - arma::sum(M,0)));
+}
+
+
+//' Execute a Tabu Search in the neighborhood of Solution S (Max Iterations)
+//' @param \code{S} initial solution
+//' @param \code{distanceMatrix} Square and symmetric distance matrix
+//' @return Best solution of local tabu search 
+//' @examples
+//' dotabuSearch()
+// [[Rcpp::export]]
+arma::uvec doTabuSearchParallel(arma::uvec S, const arma::mat& distanceMatrix, int alpha = 15, double rhoOver2 = 4, int maxIterations = 1000)
+{
+  auto Start = std::chrono::steady_clock::now();
+  
+  arma::uvec alphaMultiplier = {1, 2, 1, 4, 1, 2, 1, 8, 1, 2, 1, 4, 1, 2, 1};
+  double dmax = distanceMatrix.max(); // Max distance between two nodes
+  arma::uvec BestSoFar(S);
+  double fitness = getBinaryTourFitness(S, distanceMatrix);
+  double BestFitnessSoFar = fitness; 
+  int iterCount = 0;
+  int N = distanceMatrix.n_cols;
+  int M = sum(S);
+  arma::uvec Tenure(N, arma::fill::zeros); // Tenure List
+  double t0 = 0;
+  double t1 = 0;
+  double t2 = 0;
+  double t3 = 0;
+  double t4 = 0; 
+  double t5 = 0;
+  double t6 = 0;
+  double total = 0;
+  arma::vec p = arma::sum(distanceMatrix.cols(arma::find(S == 1)),1);
+  while(iterCount < maxIterations)
+  {
+    auto start_while = std::chrono::steady_clock::now();
+    
+    // Find p_i, i in (1, N), and min(p_i) ---------------------
+    //arma::vec p = arma::sum(distanceMatrix.cols(arma::find(S == 1)),1);
+    
+    auto find_p = std::chrono::steady_clock::now();
+    
+    double dMinInS  = arma::min(p.elem(arma::find(S == 1)));
+    double dMaxOutS = arma::max(p.elem(arma::find(S == 0)));
+    //---------------------------------------------------------
+    
+    auto find_dMs = std::chrono::steady_clock::now();
+    
+    
+    // Find X, Y, Delta, u and v
+    arma::uvec X = (p <=  dMinInS + rhoOver2*dmax) % S;
+    arma::uvec Y = (p >= dMaxOutS - rhoOver2*dmax) % (1 - S);
+    arma::uvec NC_X = arma::find(X == 1);
+    arma::uvec NC_Y = arma::find(Y == 1);
+    //arma::mat delta(NC_X.size(), NC_Y.size(), arma::fill::zeros);
+    
+    auto find_NC = std::chrono::steady_clock::now();
+    
+    // (OPENMP)
+    /////
+    arma::mat delta = -distanceMatrix(NC_X, NC_Y);
+    delta.each_col() -= p(NC_X);
+    delta.each_row() += p(NC_Y).t();
+    ////
+    // #pragma omp parallel for schedule(dynamic, 1)
+    // for(int j = 0; j  < NC_Y.size(); ++j)
+    //   for(int i = 0; i < NC_X.size(); ++i)
+    //     delta(i,j) = p(NC_Y(j)) - p(NC_X(i)) - distanceMatrix(NC_X(i),NC_Y(j));
+    double bestDelta = delta.max();
+    
+    auto find_delta = std::chrono::steady_clock::now();
+    
+    
+    //arma::uvec max_shuffled = (arma::shuffle(arma::find(delta == bestDelta)));
+    arma::uvec maxValues = arma::find(delta == bestDelta);
+    int randMax = maxValues(arma::randi(arma::distr_param(0,maxValues.size()-1)));
+    int u = NC_X(randMax % NC_X.size());
+    int v = NC_Y(randMax / NC_X.size());
+    
+    auto find_uv = std::chrono::steady_clock::now();
+    
+    // Swap u and x if admissible
+    if (((u != v) &&         \
+        (Tenure(u) == 0) &&  \
+        (Tenure(v) == 0)) || \
+        (BestFitnessSoFar < (fitness + bestDelta))){
+      S(u) = 0;
+      S(v) = 1;
+      p +=  distanceMatrix.col(v) - distanceMatrix.col(u);
+      double dp = distanceMatrix(v, u);
+      p(u) += dp;
+      p(v) -= dp;
+      fitness += bestDelta;
+      int index = (int)std::floor(15*(((double)(iterCount%1500))/1500.0));
+      Tenure(u) = alpha*alphaMultiplier(index);
+      Tenure(v) = int(0.7*Tenure(u));
+    }
+    
+    auto swap_uv = std::chrono::steady_clock::now();
+    
+    if (BestFitnessSoFar < fitness){
+      BestSoFar = S;
+      BestFitnessSoFar = fitness;
+    }
+    //---------------------------------------------------------
+    Tenure.elem( find(Tenure > 0.5) ) -= 1;
+    iterCount++;
+    
+    auto tenure_and_fitness = std::chrono::steady_clock::now();
+    t0 += std::chrono::duration <double, std::milli> (find_p - start_while).count()/1000;
+    t1 += std::chrono::duration <double, std::milli> (find_dMs - find_p).count()/1000;
+    t2 += std::chrono::duration <double, std::milli> (find_NC - find_dMs).count()/1000;
+    t3 += std::chrono::duration <double, std::milli> (find_delta - find_NC).count()/1000;
+    t4 += std::chrono::duration <double, std::milli> (find_uv - find_delta).count()/1000;
+    t5 += std::chrono::duration <double, std::milli> (swap_uv - find_uv).count()/1000;
+    t6 += std::chrono::duration <double, std::milli> (tenure_and_fitness - swap_uv).count()/1000;
+    
+    //Rprintf("\nBest = %3.2f, S = %3.2f", BestFitnessSoFar, fitness);
+  }
+  auto End = std::chrono::steady_clock::now();
+  total = std::chrono::duration <double, std::milli> (End - Start).count()/1000;
+  Rprintf("\n T0 = %.3f, \n T1 = %.3f, \n T2 = %.3f, \n T3 = %.3f, \n T4 = %.3f, \n T5 = %.3f, \n T6 = %.3f, \n Total = %.3f", t0, t1, t2, t3, t4, t5, t6, total);
+  return(BestSoFar);  
+}
+
+
+
+//' Pool Population initialization 
+//' @details Get the initial populatio
+//' @param \code{tourSize} Ok. Stop it.
+//' @param \code{Distances} Distance matrix
+//' @param \code{populationSize} You know! 
+//' @return A matrix where each column is a individual in the population
+//' @export 
+// [[Rcpp::export("initializeTiming")]] 
+arma::umat initializePoolTiming(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 1){
+  auto Start = std::chrono::steady_clock::now();
+  int N = distanceMatrix.n_cols;
+  // if (!distanceMatrix.is_square())
+  //   Rcpp::stop("Distance Matrix must be square");
+  int count = 0;
+  arma::umat population(N, populationSize, arma::fill::zeros);
+  int flag = 0;
+  double t0 = 0;
+  double t1 = 0;
+  double t2 = 0;
+  double t3 = 0;
+  double t4 = 0; 
+  double t5 = 0;
+  double t6 = 0;
+  double total = 0;
+  while(count < populationSize){
+    auto start_while = std::chrono::steady_clock::now();
+    flag++;
+    int Limit = multiplier * arma::sum(arma::sum(population, 0) == 0);
+    arma::umat macroPopulation(N, Limit, arma::fill::zeros);
+    arma::vec populationFitness(Limit, arma::fill::zeros);
+    
+    auto setup = std::chrono::steady_clock::now();
+    
+#pragma omp parallel for schedule(dynamic)
+    for(int i = 0; i < Limit; i++){
+      arma::uvec nodes = arma::shuffle(arma::linspace<arma::uvec>(0, N-1, N));
+      arma::uvec tour = nodes.subvec(0, tourSize - 1);
+      arma::uvec candidate(N, arma::fill::zeros);
+      candidate.elem(tour) += 1;
+      macroPopulation.col(i) = doTabuSearchMI(candidate, distanceMatrix, 15, 1, maxIterations);
+      populationFitness(i) = getBinaryTourFitness(candidate, distanceMatrix);
+    }
+    auto parallel_for = std::chrono::steady_clock::now();
+    
+    arma::uvec best_index = sort_index(populationFitness, "descend");
+    auto it = best_index.begin(); 
+    if (count == 0) {
+      population.col(0) =  macroPopulation.col(best_index(0));
+      it++;
+      count++;
+    }
+    auto count_sol = std::chrono::steady_clock::now();
+    
+    for(; it != best_index.end(); it++){
+      int distance = getSolutionToPopulationDistance(macroPopulation.col(*it), population.cols(0, count - 1));
+      if (distance >= 1) {
+        population.col(count) = macroPopulation.col(*it);
+        count++;
+        if (count == populationSize) break;
+      }
+    }  
+    
+    auto pop_size = std::chrono::steady_clock::now();
+    
+    if (flag >  10*populationSize) {
+      Rcpp::Rcout << "Houston, we have a problem. Not that much diversity." << std::endl; 
+      break;
+    }
+    
+    t0 += std::chrono::duration <double, std::milli> (setup - start_while).count()/1000;
+    t1 += std::chrono::duration <double, std::milli> (parallel_for - setup).count()/1000;
+    t2 += std::chrono::duration <double, std::milli> (count_sol - parallel_for).count()/1000;
+    t3 += std::chrono::duration <double, std::milli> (pop_size - count_sol).count()/1000;
+    //t4 += std::chrono::duration <double, std::milli> (find_uv - find_delta).count()/1000;
+    //t5 += std::chrono::duration <double, std::milli> (swap_uv - find_uv).count()/1000;
+    //t6 += std::chrono::duration <double, std::milli> (tenure_and_fitness - swap_uv).count()/1000;
+  }
+  auto End = std::chrono::steady_clock::now();
+  total = std::chrono::duration <double, std::milli> (End - Start).count()/1000;
+  Rprintf("\n T0 = %.3f, \n T1 = %.3f, \n T2 = %.3f, \n T3 = %.3f, \n T4 = %.3f, \n T5 = %.3f, \n T6 = %.3f, \n Total = %.3f", t0, t1, t2, t3, t4, t5, t6, total);
+  return(population);
 }

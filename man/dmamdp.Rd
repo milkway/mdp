@@ -5,7 +5,7 @@
 \title{Hao's Diversification-driven Memetic Algorith for Maximum Diversity Problem}
 \usage{
 dmamdp(distanceMatrix, tourSize, populationSize, maxTime,
-  lostMaxIterations, p)
+  lostMaxIterations, p, multiplier)
 }
 \arguments{
 \item{\code{distanceMatrix}}{Symmetric matrix.}

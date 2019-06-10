@@ -5,7 +5,7 @@
 \title{Pool Population initialization}
 \usage{
 initializePool(distanceMatrix, tourSize, populationSize = 10L,
-  maxIterations = 100L, multiplier = 3L)
+  maxIterations = 100L, multiplier = 1L)
 }
 \arguments{
 \item{\code{tourSize}}{Ok. Stop it.}

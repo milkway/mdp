@@ -246,9 +246,39 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// doTabuSearchParallel
+arma::uvec doTabuSearchParallel(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int maxIterations);
+RcppExport SEXP _mdp_doTabuSearchParallel(SEXP SSEXP, SEXP distanceMatrixSEXP, SEXP alphaSEXP, SEXP rhoOver2SEXP, SEXP maxIterationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type rhoOver2(rhoOver2SEXP);
+    Rcpp::traits::input_parameter< int >::type maxIterations(maxIterationsSEXP);
+    rcpp_result_gen = Rcpp::wrap(doTabuSearchParallel(S, distanceMatrix, alpha, rhoOver2, maxIterations));
+    return rcpp_result_gen;
+END_RCPP
+}
+// initializePoolTiming
+arma::umat initializePoolTiming(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier);
+RcppExport SEXP _mdp_initializePoolTiming(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxIterationsSEXP, SEXP multiplierSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type distanceMatrix(distanceMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type tourSize(tourSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type populationSize(populationSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type maxIterations(maxIterationsSEXP);
+    Rcpp::traits::input_parameter< int >::type multiplier(multiplierSEXP);
+    rcpp_result_gen = Rcpp::wrap(initializePoolTiming(distanceMatrix, tourSize, populationSize, maxIterations, multiplier));
+    return rcpp_result_gen;
+END_RCPP
+}
 // mamdp
-Rcpp::List mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);
-RcppExport SEXP _mdp_mamdp(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxIterationsSEXP, SEXP maxTimeSEXP) {
+Rcpp::List mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime, int multiplier);
+RcppExport SEXP _mdp_mamdp(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxIterationsSEXP, SEXP maxTimeSEXP, SEXP multiplierSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -257,13 +287,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type populationSize(populationSizeSEXP);
     Rcpp::traits::input_parameter< int >::type maxIterations(maxIterationsSEXP);
     Rcpp::traits::input_parameter< double >::type maxTime(maxTimeSEXP);
-    rcpp_result_gen = Rcpp::wrap(mamdp(distanceMatrix, tourSize, populationSize, maxIterations, maxTime));
+    Rcpp::traits::input_parameter< int >::type multiplier(multiplierSEXP);
+    rcpp_result_gen = Rcpp::wrap(mamdp(distanceMatrix, tourSize, populationSize, maxIterations, maxTime, multiplier));
     return rcpp_result_gen;
 END_RCPP
 }
 // obma
-Rcpp::List obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);
-RcppExport SEXP _mdp_obma(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxIterationsSEXP, SEXP maxTimeSEXP) {
+Rcpp::List obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime, int multiplier);
+RcppExport SEXP _mdp_obma(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxIterationsSEXP, SEXP maxTimeSEXP, SEXP multiplierSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -272,13 +303,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type populationSize(populationSizeSEXP);
     Rcpp::traits::input_parameter< int >::type maxIterations(maxIterationsSEXP);
     Rcpp::traits::input_parameter< double >::type maxTime(maxTimeSEXP);
-    rcpp_result_gen = Rcpp::wrap(obma(distanceMatrix, tourSize, populationSize, maxIterations, maxTime));
+    Rcpp::traits::input_parameter< int >::type multiplier(multiplierSEXP);
+    rcpp_result_gen = Rcpp::wrap(obma(distanceMatrix, tourSize, populationSize, maxIterations, maxTime, multiplier));
     return rcpp_result_gen;
 END_RCPP
 }
 // dmamdp
-Rcpp::List dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int lostMaxIterations, double p);
-RcppExport SEXP _mdp_dmamdp(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxTimeSEXP, SEXP lostMaxIterationsSEXP, SEXP pSEXP) {
+Rcpp::List dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int lostMaxIterations, double p, int multiplier);
+RcppExport SEXP _mdp_dmamdp(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxTimeSEXP, SEXP lostMaxIterationsSEXP, SEXP pSEXP, SEXP multiplierSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -288,7 +320,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type maxTime(maxTimeSEXP);
     Rcpp::traits::input_parameter< int >::type lostMaxIterations(lostMaxIterationsSEXP);
     Rcpp::traits::input_parameter< double >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(dmamdp(distanceMatrix, tourSize, populationSize, maxTime, lostMaxIterations, p));
+    Rcpp::traits::input_parameter< int >::type multiplier(multiplierSEXP);
+    rcpp_result_gen = Rcpp::wrap(dmamdp(distanceMatrix, tourSize, populationSize, maxTime, lostMaxIterations, p, multiplier));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -312,9 +345,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mdp_getAverageDistanceToPopulation", (DL_FUNC) &_mdp_getAverageDistanceToPopulation, 2},
     {"_mdp_getAverageDistanceToPopulationByIndex", (DL_FUNC) &_mdp_getAverageDistanceToPopulationByIndex, 2},
     {"_mdp_getSolutionToPopulationDistanceByIndex", (DL_FUNC) &_mdp_getSolutionToPopulationDistanceByIndex, 2},
-    {"_mdp_mamdp", (DL_FUNC) &_mdp_mamdp, 5},
-    {"_mdp_obma", (DL_FUNC) &_mdp_obma, 5},
-    {"_mdp_dmamdp", (DL_FUNC) &_mdp_dmamdp, 6},
+    {"_mdp_doTabuSearchParallel", (DL_FUNC) &_mdp_doTabuSearchParallel, 5},
+    {"_mdp_initializePoolTiming", (DL_FUNC) &_mdp_initializePoolTiming, 5},
+    {"_mdp_mamdp", (DL_FUNC) &_mdp_mamdp, 6},
+    {"_mdp_obma", (DL_FUNC) &_mdp_obma, 6},
+    {"_mdp_dmamdp", (DL_FUNC) &_mdp_dmamdp, 7},
     {NULL, NULL, 0}
 };
 

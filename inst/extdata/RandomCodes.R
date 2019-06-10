@@ -17,21 +17,22 @@ distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.1.
 
 rst <- binarymodel(distances, m = 50, MAX_TIME = 600, THREADS = 8,  verbose = TRUE)
 
-N <- 500
+N <- 2000
 distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.21.a.n2000m200.rds"))
 distances.d <- as.dist(distances)
 cluster.mdp <- hclust(distances.d)
 tour <- 
   tibble(
-    N = 1:500,
-    Cluster = cutree(cluster.mdp, 50) 
+    N = 1:2000,
+    Cluster = cutree(cluster.mdp, 200) 
     ) %>% 
   group_by(Cluster) %>% 
   sample_n(1) %>% ungroup() %>% select(N) %>% unlist(use.names = FALSE) %>% 
-  sample(50)
-binaryTour <- rep(0, 500)
+  sample(200)
+binaryTour <- rep(0, 2000)
 binaryTour[tour] <- 1
-B <- doTabuSearchMI(binaryTour, distances,  alpha = 15, maxIterations =  1000)
+B <- doTabuSearchMI(binaryTour, distances,  alpha = 15, maxIterations =  10)
+
 #microbenchmark::microbenchmark(F = doTabuSearch(binaryTour, distances, rhoOver2 = 1, alpha = 15, maxIterations =  1000), times = 10)
 getBinaryTourFitness(B, distances)
 
@@ -53,23 +54,24 @@ apply(P2, 2, function(x){getBinaryTourFitness(x, distances)})
 S <- mamdp(distanceMatrix = distances, 
            tourSize = 200, 
            populationSize = 10, 
-           maxIterations = 1000, 
+           maxIterations = 50000, 
            maxTime = 20)
 
-getBinaryTourFitness(S, distances)
+getBinaryTourFitness(S$tour, distances)
 
 S <- obma(distanceMatrix = distances, 
            tourSize = 200, 
            populationSize = 10, 
-           maxIterations = 10, 
-           maxTime = 50)
+           maxIterations = 50000, 
+           maxTime = 20)
 
 getBinaryTourFitness(S, distances)
 
 S <- dmamdp(distanceMatrix = distances, 
           tourSize = 200, 
           populationSize = 10, 
-          lostMaxIterations = 10, 
+          lostMaxIterations = 10000, 
           maxTime = 20,
           p = .6)
+
 getBinaryTourFitness(S, distances)
