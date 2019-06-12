@@ -5,7 +5,7 @@
 \title{Opposition Based Population initialization}
 \usage{
 initializeOPB(distanceMatrix, tourSize, populationSize = 10L,
-  maxIterations = 100L, multiplier = 1L)
+  maxIterations = 100L, multiplier = 1L, rhoOver2 = 2)
 }
 \arguments{
 \item{\code{TourSize}}{Well..}

@@ -5,7 +5,7 @@
 \title{Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem}
 \usage{
 obma(distanceMatrix, tourSize, populationSize, maxIterations,
-  maxTime = 60, multiplier = 3L)
+  maxTime = 60, multiplier = 3L, rhoOver2 = 2, verbose = TRUE)
 }
 \arguments{
 \item{\code{distanceMatrix}}{Symmetric matrix.}

@@ -5,7 +5,7 @@
 \title{Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem}
 \usage{
 mamdp(distanceMatrix, tourSize, populationSize, maxIterations,
-  maxTime = 60, multiplier = 3L)
+  maxTime = 60, multiplier = 3L, rhoOver2 = 2, verbose = TRUE)
 }
 \arguments{
 \item{\code{distanceMatrix}}{Symmetric matrix.}

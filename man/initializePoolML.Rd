@@ -5,7 +5,7 @@
 \title{Pool Population initialization (Maximum Lost)}
 \usage{
 initializePoolML(distanceMatrix, tourSize, populationSize = 10L,
-  lostMaxIterations = 100L, multiplier = 1L)
+  lostMaxIterations = 100L, multiplier = 1L, rhoOver2 = 2)
 }
 \arguments{
 \item{\code{TourSize}}{Thats it.}

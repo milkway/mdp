@@ -53,7 +53,7 @@ doBackboneCrossOver <- function(S_a, S_b, distanceMatrix) {
 #' @return Best solution of local tabu search 
 #' @examples
 #' dotabuSearch()
-doTabuSearchMI <- function(S, distanceMatrix, alpha = 15L, rhoOver2 = 1, maxIterations = 1000L) {
+doTabuSearchMI <- function(S, distanceMatrix, alpha = 15L, rhoOver2 = 2, maxIterations = 1000L) {
     .Call(`_mdp_doTabuSearchMI`, S, distanceMatrix, alpha, rhoOver2, maxIterations)
 }
 
@@ -94,8 +94,8 @@ updatePopulationByRank <- function(S, Population, distanceMatrix, beta = 0.6) {
 #' @param \code{PopulationSize} That's it.
 #' @return A matrix where each column is a individual in the population
 #' @export 
-initializeOPB <- function(distanceMatrix, tourSize, populationSize = 10L, maxIterations = 100L, multiplier = 1L) {
-    .Call(`_mdp_initializeOBP`, distanceMatrix, tourSize, populationSize, maxIterations, multiplier)
+initializeOPB <- function(distanceMatrix, tourSize, populationSize = 10L, maxIterations = 100L, multiplier = 1L, rhoOver2 = 2) {
+    .Call(`_mdp_initializeOBP`, distanceMatrix, tourSize, populationSize, maxIterations, multiplier, rhoOver2)
 }
 
 #' Pool Population initialization 
@@ -105,8 +105,8 @@ initializeOPB <- function(distanceMatrix, tourSize, populationSize = 10L, maxIte
 #' @param \code{populationSize} You know! 
 #' @return A matrix where each column is a individual in the population
 #' @export 
-initializePool <- function(distanceMatrix, tourSize, populationSize = 10L, maxIterations = 100L, multiplier = 1L) {
-    .Call(`_mdp_initializePool`, distanceMatrix, tourSize, populationSize, maxIterations, multiplier)
+initializePool <- function(distanceMatrix, tourSize, populationSize = 10L, maxIterations = 100L, multiplier = 1L, rhoOver2 = 2) {
+    .Call(`_mdp_initializePool`, distanceMatrix, tourSize, populationSize, maxIterations, multiplier, rhoOver2)
 }
 
 #' Pool Population initialization (Maximum Lost)
@@ -116,8 +116,8 @@ initializePool <- function(distanceMatrix, tourSize, populationSize = 10L, maxIt
 #' @param \code{populationSize} Same old guy 
 #' @return A matrix where each column is a individual in the population
 #' @export 
-initializePoolML <- function(distanceMatrix, tourSize, populationSize = 10L, lostMaxIterations = 100L, multiplier = 1L) {
-    .Call(`_mdp_initializePoolML`, distanceMatrix, tourSize, populationSize, lostMaxIterations, multiplier)
+initializePoolML <- function(distanceMatrix, tourSize, populationSize = 10L, lostMaxIterations = 100L, multiplier = 1L, rhoOver2 = 2) {
+    .Call(`_mdp_initializePoolML`, distanceMatrix, tourSize, populationSize, lostMaxIterations, multiplier, rhoOver2)
 }
 
 #' Get fitness from tour
@@ -219,8 +219,8 @@ initializeTiming <- function(distanceMatrix, tourSize, populationSize = 10L, max
 #' @param \code{maxIterations} for the tabu search.
 #' @return A better person.
 #' @export 
-mamdp <- function(distanceMatrix, tourSize, populationSize, maxIterations, maxTime = 60, multiplier = 3L) {
-    .Call(`_mdp_mamdp`, distanceMatrix, tourSize, populationSize, maxIterations, maxTime, multiplier)
+mamdp <- function(distanceMatrix, tourSize, populationSize, maxIterations, maxTime = 60, multiplier = 3L, rhoOver2 = 2, verbose = TRUE) {
+    .Call(`_mdp_mamdp`, distanceMatrix, tourSize, populationSize, maxIterations, maxTime, multiplier, rhoOver2, verbose)
 }
 
 #' Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem
@@ -231,8 +231,8 @@ mamdp <- function(distanceMatrix, tourSize, populationSize, maxIterations, maxTi
 #' @param \code{maxIterations} for the tabu search.
 #' @return A better man.
 #' @export 
-obma <- function(distanceMatrix, tourSize, populationSize, maxIterations, maxTime = 60, multiplier = 3L) {
-    .Call(`_mdp_obma`, distanceMatrix, tourSize, populationSize, maxIterations, maxTime, multiplier)
+obma <- function(distanceMatrix, tourSize, populationSize, maxIterations, maxTime = 60, multiplier = 3L, rhoOver2 = 2, verbose = TRUE) {
+    .Call(`_mdp_obma`, distanceMatrix, tourSize, populationSize, maxIterations, maxTime, multiplier, rhoOver2, verbose)
 }
 
 #' Hao's Diversification-driven Memetic Algorith for Maximum Diversity Problem 
@@ -245,7 +245,7 @@ obma <- function(distanceMatrix, tourSize, populationSize, maxIterations, maxTim
 #' @param \code{p} Probability of get laid. Otherwise go fish in random pool.
 #' @return A better man.
 #' @export 
-dmamdp <- function(distanceMatrix, tourSize, populationSize, maxTime, lostMaxIterations, p, multiplier) {
-    .Call(`_mdp_dmamdp`, distanceMatrix, tourSize, populationSize, maxTime, lostMaxIterations, p, multiplier)
+dmamdp <- function(distanceMatrix, tourSize, populationSize, maxTime, lostMaxIterations, p, multiplier, rhoOver2 = 2, verbose = TRUE) {
+    .Call(`_mdp_dmamdp`, distanceMatrix, tourSize, populationSize, maxTime, lostMaxIterations, p, multiplier, rhoOver2, verbose)
 }
 

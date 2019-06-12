@@ -18,7 +18,7 @@ distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.1.
 rst <- binarymodel(distances, m = 50, MAX_TIME = 600, THREADS = 8,  verbose = TRUE)
 
 N <- 2000
-distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.21.a.n2000m200.rds"))
+distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.21.b.n2000m200.rds"))
 distances.d <- as.dist(distances)
 cluster.mdp <- hclust(distances.d)
 tour <- 
@@ -29,10 +29,18 @@ tour <-
   group_by(Cluster) %>% 
   sample_n(1) %>% ungroup() %>% select(N) %>% unlist(use.names = FALSE) %>% 
   sample(200)
+
 binaryTour <- rep(0, 2000)
 binaryTour[tour] <- 1
 B <- doTabuSearchMI(binaryTour, distances,  alpha = 15, maxIterations =  10)
+getBinaryTourFitness(B, distances)
 
+binaryTour <- rep(0, 2000)
+binaryTour[sample(1:2000,200)] <- 1
+B <- doTabuSearchML(binaryTour, distances,  alpha = 15, lostMaxIterations =  10000, rhoOver2 = 2)
+getBinaryTourFitness(B, distances)
+B <- doTabuSearchParallel(binaryTour, distances,  alpha = 15, maxIterations =  1000, rhoOver2 = 2)
+getBinaryTourFitness(B, distances)
 #microbenchmark::microbenchmark(F = doTabuSearch(binaryTour, distances, rhoOver2 = 1, alpha = 15, maxIterations =  1000), times = 10)
 getBinaryTourFitness(B, distances)
 
@@ -54,24 +62,34 @@ apply(P2, 2, function(x){getBinaryTourFitness(x, distances)})
 S <- mamdp(distanceMatrix = distances, 
            tourSize = 200, 
            populationSize = 10, 
-           maxIterations = 50000, 
-           maxTime = 20)
+           maxIterations = 10000, 
+           maxTime = 40, 
+           rhoOver2 = 1, 
+           multiplier = 1, 
+           verbose = TRUE)
+S$data
 
 getBinaryTourFitness(S$tour, distances)
 
 S <- obma(distanceMatrix = distances, 
-           tourSize = 200, 
-           populationSize = 10, 
-           maxIterations = 50000, 
-           maxTime = 20)
-
+          tourSize = 200, 
+          populationSize = 10, 
+          maxIterations = 500,  
+          maxTime = 60,
+          multiplier = 3, 
+          rhoOver2 = 2, 
+          verbose = TRUE)
+S$data
 getBinaryTourFitness(S, distances)
 
 S <- dmamdp(distanceMatrix = distances, 
           tourSize = 200, 
           populationSize = 10, 
           lostMaxIterations = 10000, 
-          maxTime = 20,
+          maxTime = 60, 
+          multiplier = 3, 
+          rhoOver2 = 2, 
+          verbose = TRUE,
           p = .6)
-
+S$data
 getBinaryTourFitness(S, distances)

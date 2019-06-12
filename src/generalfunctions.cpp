@@ -46,21 +46,21 @@ arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alp
 // Execute a Tabu Search in the neighborhood of Solution S (LostMax Criterium)
 arma::uvec doTabuSearchML(arma::uvec S, const arma::mat& distanceMatrix, int alpha, double rhoOver2, int lostmaxIterations);
 // Pool initialization 
-arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier);   
+arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier, double rhoOver2);   
 // Pool initialization 
-arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int populationSize, int listMaxIterations, int multiplier);   
+arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int populationSize, int listMaxIterations, int multiplier, double rhoOver2);   
 // Opposition Based Pool Initialize()
-arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier);   
+arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, int multiplier, double rhoOver2);   
 // update population 
 arma::umat updatePopulation(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);   
 // Rank based update population 
 arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arma::mat& distanceMatrix, double beta);
 // Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem
-arma::uvec mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);   
+Rcpp::List  mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime, int multiplier, double rhoOver2);   
 // Hao's Opposition-based Memetic memetic search for the Maximum Diversity Problem
-arma::uvec obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime);   
+Rcpp::List  obma(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime, int multiplier, double rhoOver2);   
 // Hao's Diversification-driven Memetic Algorith for Maximum Diversity Problem 
-arma::uvec dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p);   
+Rcpp::List dmamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, double maxTime, int maxLostIterations, double p, int multiplier, double rhoOver2);   
 
 /*****************************
  * End of  Functions Headers *
@@ -98,23 +98,28 @@ arma::uvec doCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, const arma:
   arma::uvec child(S_a % S_b); // Backbone
   arma::uvec poolA = arma::find((S_a + child) == 1); // The other poor little guys in S_a
   arma::uvec poolB = arma::find((S_b + child) == 1); // The other poor little guys in S_b
-  
   int m = arma::sum(S_a);
   int order = 0;
   int goingIn = 0;
-  while(arma::sum(child) < m){
-    arma::mat deltaA = distanceMatrix(arma::find(child == 1), poolA);
-    order = arma::index_max(arma::sum(deltaA, 0));
-    goingIn = poolA(order);
-    child(goingIn) = 1;
-    poolA.shed_row(order);
+  while(true){
+    if (poolA.size() > 0){
+      arma::mat deltaA = distanceMatrix(arma::find(child == 1), poolA);
+      order = arma::index_max(arma::sum(deltaA, 0));
+      goingIn = poolA(order);
+      child(goingIn) = 1;
+      poolA.shed_row(order);
+    }
     if (arma::sum(child) >= m) break;
-    arma::mat deltaB = distanceMatrix(arma::find(child == 1), poolB);
-    order = arma::index_max(arma::sum(deltaB, 0));
-    goingIn = poolB(order);
-    child(goingIn) = 1;
-    poolB.shed_row(order);
+    if (poolB.size() > 0){
+      arma::mat deltaB = distanceMatrix(arma::find(child == 1), poolB);
+      order = arma::index_max(arma::sum(deltaB, 0));
+      goingIn = poolB(order);
+      child(goingIn) = 1;
+      poolB.shed_row(order); 
+    }
+    if (arma::sum(child) >= m) break;
   }
+  //Rcpp::Rcout << "S0sum "<< arma::sum(child) << std::endl;
   return(child);
 }
 
@@ -162,7 +167,7 @@ arma::umat doBackboneCrossOver(const arma::uvec& S_a, const arma::uvec& S_b, con
 //' @examples
 //' dotabuSearch()
 // [[Rcpp::export]]
-arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alpha = 15, double rhoOver2 = 1, int maxIterations = 1000)
+arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alpha = 15, double rhoOver2 = 2, int maxIterations = 1000)
 {
   arma::uvec alphaMultiplier = {1, 2, 1, 4, 1, 2, 1, 8, 1, 2, 1, 4, 1, 2, 1};
   double dmax = distanceMatrix.max(); // Max distance between two nodes
@@ -212,8 +217,8 @@ arma::uvec doTabuSearchMI(arma::uvec S, const arma::mat& distanceMatrix, int alp
       S(v) = 1;
       p +=  distanceMatrix.col(v) - distanceMatrix.col(u);
       double dp = distanceMatrix(v, u);
-      p(u) += dp;
-      p(v) -= dp;
+      //p(u) += dp;
+      //p(v) -= dp;
       fitness += bestDelta;
       int index = (int)std::floor(15*(((double)(iterCount%1500))/1500.0));
       Tenure(u) = alpha*alphaMultiplier(index);
@@ -288,8 +293,8 @@ arma::uvec doTabuSearchML(arma::uvec S, const arma::mat& distanceMatrix, int alp
       S(v) = 1;
       p +=  distanceMatrix.col(v) - distanceMatrix.col(u);
       double dp = distanceMatrix(v, u);
-      p(u) += dp;
-      p(v) -= dp;
+      //p(u) += dp;
+      //p(v) -= dp;
       fitness += bestDelta;
       int index = (int)std::floor(15*(((double)(lostIterCount%1500))/1500.0));
       Tenure(u) = alpha*alphaMultiplier(index);
@@ -376,7 +381,7 @@ arma::umat updatePopulationByRank(arma::uvec S, arma::umat Population, const arm
 //' @return A matrix where each column is a individual in the population
 //' @export 
 // [[Rcpp::export("initializeOPB")]] 
-arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 1){
+arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 1, double rhoOver2 = 2){
   int N = distanceMatrix.n_cols;
   if (tourSize > N/2) 
     Rcpp::stop("Not implemented yet. Try with tour size smaller than N/2.");
@@ -397,8 +402,8 @@ arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int popu
       arma::uvec  rearCandidate(N, arma::fill::zeros);
       frontCandidate.elem(frontTour) += 1;
       rearCandidate.elem(rearTour)  += 1;
-      frontCandidate = doTabuSearchMI(frontCandidate, distanceMatrix, 15, 4, maxIterations);
-      rearCandidate  = doTabuSearchMI(rearCandidate, distanceMatrix, 15, 4, maxIterations);
+      frontCandidate = doTabuSearchMI(frontCandidate, distanceMatrix, 15, rhoOver2, maxIterations);
+      rearCandidate  = doTabuSearchMI(rearCandidate, distanceMatrix, 15, rhoOver2, maxIterations);
       double frontFitness = getBinaryTourFitness(frontCandidate, distanceMatrix);
       double rearFitness = getBinaryTourFitness(rearCandidate, distanceMatrix);
       if (frontFitness >= rearFitness){
@@ -442,7 +447,7 @@ arma::umat initializeOBP(const arma::mat& distanceMatrix, int tourSize, int popu
 //' @return A matrix where each column is a individual in the population
 //' @export 
 // [[Rcpp::export("initializePool")]] 
-arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 1){
+arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int maxIterations = 100, int multiplier = 1, double rhoOver2 = 2){
   int N = distanceMatrix.n_cols;
   // if (!distanceMatrix.is_square())
   //   Rcpp::stop("Distance Matrix must be square");
@@ -460,7 +465,7 @@ arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int pop
       arma::uvec tour = nodes.subvec(0, tourSize - 1);
       arma::uvec candidate(N, arma::fill::zeros);
       candidate.elem(tour) += 1;
-      macroPopulation.col(i) = doTabuSearchMI(candidate, distanceMatrix, 15, 2, maxIterations);
+      macroPopulation.col(i) = doTabuSearchMI(candidate, distanceMatrix, 15, rhoOver2, maxIterations);
       populationFitness(i) = getBinaryTourFitness(candidate, distanceMatrix);
     }
     arma::uvec best_index = sort_index(populationFitness, "descend");
@@ -496,7 +501,7 @@ arma::umat initializePool(const arma::mat& distanceMatrix, int tourSize, int pop
 //' @return A matrix where each column is a individual in the population
 //' @export 
 // [[Rcpp::export]] 
-arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int lostMaxIterations = 100, int multiplier = 1){
+arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int populationSize = 10, int lostMaxIterations = 100, int multiplier = 1, double rhoOver2 = 2){
   int N = distanceMatrix.n_cols;
   // if (!distanceMatrix.is_square())
   //   Rcpp::stop("Distance Matrix must be square");
@@ -514,7 +519,7 @@ arma::umat initializePoolML(const arma::mat& distanceMatrix, int tourSize, int p
       arma::uvec tour = nodes.subvec(0, tourSize - 1);
       arma::uvec candidate(N, arma::fill::zeros);
       candidate.elem(tour) += 1;
-      macroPopulation.col(i) = doTabuSearchML(candidate, distanceMatrix, 15, 2, lostMaxIterations);
+      macroPopulation.col(i) = doTabuSearchML(candidate, distanceMatrix, 15, rhoOver2, lostMaxIterations);
       populationFitness(i) = getBinaryTourFitness(candidate, distanceMatrix);
     }
     arma::uvec best_index = sort_index(populationFitness, "descend");
@@ -732,10 +737,15 @@ arma::uvec doTabuSearchParallel(arma::uvec S, const arma::mat& distanceMatrix, i
     
     //arma::uvec max_shuffled = (arma::shuffle(arma::find(delta == bestDelta)));
     arma::uvec maxValues = arma::find(delta == bestDelta);
+    //Rcpp::Rcout << "Delta" << delta;
+    //Rcpp::Rcout << "maxValues"<< maxValues;
+    //Rcpp::Rcout << "NC_X" << NC_X;
+    //Rcpp::Rcout << "NC_Y" << NC_Y;
     int randMax = maxValues(arma::randi(arma::distr_param(0,maxValues.size()-1)));
     int u = NC_X(randMax % NC_X.size());
     int v = NC_Y(randMax / NC_X.size());
-    
+    //Rcpp::Rcout << "u " << u << " v " << v << std::endl;
+    //Rcpp::Rcout << "Tu " << Tenure(u) << " Tv " << Tenure(v) << std::endl;
     auto find_uv = std::chrono::steady_clock::now();
     
     // Swap u and x if admissible
@@ -746,9 +756,9 @@ arma::uvec doTabuSearchParallel(arma::uvec S, const arma::mat& distanceMatrix, i
       S(u) = 0;
       S(v) = 1;
       p +=  distanceMatrix.col(v) - distanceMatrix.col(u);
-      double dp = distanceMatrix(v, u);
-      p(u) += dp;
-      p(v) -= dp;
+      //double dp = distanceMatrix(v, u);
+      //p(u) += dp;
+      //p(v) -= dp;
       fitness += bestDelta;
       int index = (int)std::floor(15*(((double)(iterCount%1500))/1500.0));
       Tenure(u) = alpha*alphaMultiplier(index);
@@ -760,6 +770,7 @@ arma::uvec doTabuSearchParallel(arma::uvec S, const arma::mat& distanceMatrix, i
     if (BestFitnessSoFar < fitness){
       BestSoFar = S;
       BestFitnessSoFar = fitness;
+      Rprintf("\nBest = %5.1f, S = %5.1f, Delta = %5.2f, Count = %d\n", BestFitnessSoFar, fitness, bestDelta, iterCount);
     }
     //---------------------------------------------------------
     Tenure.elem( find(Tenure > 0.5) ) -= 1;
@@ -773,8 +784,8 @@ arma::uvec doTabuSearchParallel(arma::uvec S, const arma::mat& distanceMatrix, i
     t4 += std::chrono::duration <double, std::milli> (find_uv - find_delta).count()/1000;
     t5 += std::chrono::duration <double, std::milli> (swap_uv - find_uv).count()/1000;
     t6 += std::chrono::duration <double, std::milli> (tenure_and_fitness - swap_uv).count()/1000;
-    
-    //Rprintf("\nBest = %3.2f, S = %3.2f", BestFitnessSoFar, fitness);
+    //Rprintf("                                                                            \r");
+    //Rprintf("\nBest = %5.1f, S = %5.1f, Delta = %5.2f, Count = %d\n", BestFitnessSoFar, fitness, bestDelta, iterCount);
   }
   auto End = std::chrono::steady_clock::now();
   total = std::chrono::duration <double, std::milli> (End - Start).count()/1000;

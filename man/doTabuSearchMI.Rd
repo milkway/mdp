@@ -4,7 +4,7 @@
 \alias{doTabuSearchMI}
 \title{Execute a Tabu Search in the neighborhood of Solution S (Max Iterations)}
 \usage{
-doTabuSearchMI(S, distanceMatrix, alpha = 15L, rhoOver2 = 1,
+doTabuSearchMI(S, distanceMatrix, alpha = 15L, rhoOver2 = 2,
   maxIterations = 1000L)
 }
 \arguments{
