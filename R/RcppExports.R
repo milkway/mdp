@@ -249,3 +249,43 @@ dmamdp <- function(distanceMatrix, tourSize, populationSize, maxTime, lostMaxIte
     .Call(`_mdp_dmamdp`, distanceMatrix, tourSize, populationSize, maxTime, lostMaxIterations, p, multiplier, rhoOver2, verbose)
 }
 
+#' Execute a Tabu Search in the neighborhood of Solution S (Max Iterations)
+#' @param \code{S} Initial solution.
+#' @param \code{fitness} Initial solution fitness variable.
+#' @param \code{distances} Square and symmetric distance matrix.
+#' @param \code{alpha} Tenure list multiplier.
+#' @param \code{rho} Neighborhood constraint coefficient.
+#' @param \code{max_iteration} number of search iterations.
+#' @param \code{verbose} print results
+#' @returm int. interation of the best fitness. 
+#' @examples
+#' cnts()
+cnts <- function(S, fitness, distances, alpha = 15L, rho = 1, max_iterations = 1000L, verbose = FALSE) {
+    .Call(`_mdp_cnts`, S, fitness, distances, alpha, rho, max_iterations, verbose)
+}
+
+#' Execute a Tabu Search in the neighborhood of Solution S (Max Iterations)
+#' @param \code{S} Initial solution.
+#' @param \code{fitness} Initial solution fitness variable.
+#' @param \code{distances} Square and symmetric distance matrix.
+#' @param \code{alpha} Tenure list multiplier.
+#' @param \code{rho} Neighborhood constraint coefficient.
+#' @param \code{max_iteration} number of search iterations.
+#' @param \code{verbose} print results
+#' @returm int. interation of the best fitness. 
+#' @examples
+#' cnts()
+cnts_sugar <- function(S, distances, alpha = 15L, rho = 1, max_iterations = 1000L, verbose = FALSE) {
+    .Call(`_mdp_cnts_sugar`, S, distances, alpha, rho, max_iterations, verbose)
+}
+
+#' Get fitness from tour
+#' @details Get fitness using the tour, m and distance matrix
+#' @param \code{Tour} Set of tour's nodes.
+#' @param \code{Distances} Distance matrix
+#' @return A double value representing the chromosome fitness
+#' @export 
+tour_fitness_binary <- function(S, distances) {
+    .Call(`_mdp_tour_fitness_binary`, S, distances)
+}
+

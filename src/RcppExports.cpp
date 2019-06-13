@@ -334,6 +334,51 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cnts
+Rcpp::List cnts(arma::uvec S, double fitness, const arma::mat& distances, int alpha, double rho, int max_iterations, bool verbose);
+RcppExport SEXP _mdp_cnts(SEXP SSEXP, SEXP fitnessSEXP, SEXP distancesSEXP, SEXP alphaSEXP, SEXP rhoSEXP, SEXP max_iterationsSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
+    Rcpp::traits::input_parameter< double >::type fitness(fitnessSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    Rcpp::traits::input_parameter< int >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iterations(max_iterationsSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(cnts(S, fitness, distances, alpha, rho, max_iterations, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cnts_sugar
+Rcpp::List cnts_sugar(arma::uvec S, const arma::mat& distances, int alpha, double rho, int max_iterations, bool verbose);
+RcppExport SEXP _mdp_cnts_sugar(SEXP SSEXP, SEXP distancesSEXP, SEXP alphaSEXP, SEXP rhoSEXP, SEXP max_iterationsSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    Rcpp::traits::input_parameter< int >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iterations(max_iterationsSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(cnts_sugar(S, distances, alpha, rho, max_iterations, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tour_fitness_binary
+double tour_fitness_binary(const arma::uvec& S, const arma::mat& distances);
+RcppExport SEXP _mdp_tour_fitness_binary(SEXP SSEXP, SEXP distancesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type S(SSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    rcpp_result_gen = Rcpp::wrap(tour_fitness_binary(S, distances));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mdp_binarymodel", (DL_FUNC) &_mdp_binarymodel, 5},
@@ -359,6 +404,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mdp_mamdp", (DL_FUNC) &_mdp_mamdp, 8},
     {"_mdp_obma", (DL_FUNC) &_mdp_obma, 8},
     {"_mdp_dmamdp", (DL_FUNC) &_mdp_dmamdp, 9},
+    {"_mdp_cnts", (DL_FUNC) &_mdp_cnts, 7},
+    {"_mdp_cnts_sugar", (DL_FUNC) &_mdp_cnts_sugar, 6},
+    {"_mdp_tour_fitness_binary", (DL_FUNC) &_mdp_tour_fitness_binary, 2},
     {NULL, NULL, 0}
 };
 

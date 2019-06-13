@@ -39,8 +39,18 @@ binaryTour <- rep(0, 2000)
 binaryTour[sample(1:2000,200)] <- 1
 B <- doTabuSearchML(binaryTour, distances,  alpha = 15, lostMaxIterations =  10000, rhoOver2 = 2)
 getBinaryTourFitness(B, distances)
-B <- doTabuSearchParallel(binaryTour, distances,  alpha = 15, maxIterations =  1000, rhoOver2 = 2)
-getBinaryTourFitness(B, distances)
+
+B <- doTabuSearchParallel(binaryTour, distances,  alpha = 15, maxIterations =  50000, rhoOver2 = 2)
+fitness <- getBinaryTourFitness(binaryTour, distances)
+
+rst1 <- cnts(binaryTour,  fitness, distances,  alpha = 15, max_iterations =  50000, rho = 1, verbose = TRUE)
+
+rst2 <- cnts_sugar(binaryTour,  distances,  alpha = 15, max_iterations =  50000, rho = 1, verbose = TRUE)
+
+test(binaryTour, fitness, distances)
+
+getBinaryTourFitness(rst$S, distances)
+
 #microbenchmark::microbenchmark(F = doTabuSearch(binaryTour, distances, rhoOver2 = 1, alpha = 15, maxIterations =  1000), times = 10)
 getBinaryTourFitness(B, distances)
 
@@ -56,6 +66,23 @@ P2 <- updatePopulationByRank(S = C[,1], Population = P, distanceMatrix = distanc
 P2 <- updatePopulationMAMDP(S = C[,1], Population = P, distanceMatrix = distances, beta = .6) 
 apply(P2, 2, function(x){getBinaryTourFitness(x, distances)})
 
+###################33
+
+S <- rep(0, 2000)
+S[sample(1:2000,200)] <- 1
+.5*(t(S)%*%distances%*%S)
+sum(diag(distances))
+microbenchmark::microbenchmark(
+  gB = getBinaryTourFitness(S, distances),
+  b1 = tour_fitness_binary(S, distances),
+  b2 = tour_fitness_binary2(S, distances),
+  b3 = tour_fitness_binary3(S, distances),
+  b4 = tour_fitness_binary4(S, distances),
+  b5 = tour_fitness_binary5(S, distances),
+  b6 = tour_fitness_binary6(S, distances),
+  b7 = tour_fitness_binary7(S, distances),
+  times = 100
+)
 
 #######
 
@@ -93,3 +120,25 @@ S <- dmamdp(distanceMatrix = distances,
           p = .6)
 S$data
 getBinaryTourFitness(S, distances)
+
+###
+
+rst1 <- cnts(S, distances,  alpha = 15, max_iterations =  50000, rho = 1, verbose = TRUE)
+rst1$fitness
+tour_fitness_binary(rst1$S, distances)
+
+S <- rep(0, 2000)
+S[sample(1:2000,200)] <- 1
+rst2 <- cnts_sugar(S,  distances,  alpha = 15, max_iterations =  50000, rho = 2, verbose = TRUE)
+rst2$fitness
+rst2$iterations
+tour_fitness_binary(rst2$S, distances)
+
+S <- rep(0, 2000)
+S[sample(1:2000,200)] <- 1
+fitness <- tour_fitness_binary(S, distances)
+microbenchmark::microbenchmark(
+  F1 = cnts(S,  fitness, distances,  alpha = 15, max_iterations =  50000, rho = 1, verbose = FALSE), 
+  F2 = cnts_sugar(S,  distances,  alpha = 15, max_iterations =  50000, rho = 1, verbose = FALSE),
+  times = 10
+)
