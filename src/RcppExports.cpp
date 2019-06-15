@@ -279,6 +279,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// hao_mamdp
+Rcpp::List hao_mamdp(const arma::mat& distances, unsigned tour_size, unsigned population_size, double max_time, double beta, unsigned population_multiplier, unsigned tabu_max_iterations, double tabu_rho, double tabu_alpha, bool verbose);
+RcppExport SEXP _mdp_hao_mamdp(SEXP distancesSEXP, SEXP tour_sizeSEXP, SEXP population_sizeSEXP, SEXP max_timeSEXP, SEXP betaSEXP, SEXP population_multiplierSEXP, SEXP tabu_max_iterationsSEXP, SEXP tabu_rhoSEXP, SEXP tabu_alphaSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type tour_size(tour_sizeSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type population_size(population_sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type max_time(max_timeSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type population_multiplier(population_multiplierSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type tabu_max_iterations(tabu_max_iterationsSEXP);
+    Rcpp::traits::input_parameter< double >::type tabu_rho(tabu_rhoSEXP);
+    Rcpp::traits::input_parameter< double >::type tabu_alpha(tabu_alphaSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(hao_mamdp(distances, tour_size, population_size, max_time, beta, population_multiplier, tabu_max_iterations, tabu_rho, tabu_alpha, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // mamdp
 Rcpp::List mamdp(const arma::mat& distanceMatrix, int tourSize, int populationSize, int maxIterations, double maxTime, int multiplier, double rhoOver2, bool verbose);
 RcppExport SEXP _mdp_mamdp(SEXP distanceMatrixSEXP, SEXP tourSizeSEXP, SEXP populationSizeSEXP, SEXP maxIterationsSEXP, SEXP maxTimeSEXP, SEXP multiplierSEXP, SEXP rhoOver2SEXP, SEXP verboseSEXP) {
@@ -335,7 +355,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // cnts
-Rcpp::List cnts(arma::uvec S, double fitness, const arma::mat& distances, int alpha, double rho, int max_iterations, bool verbose);
+Rcpp::List cnts(arma::uvec S, double fitness, const arma::mat& distances, unsigned alpha, double rho, unsigned max_iterations, bool verbose);
 RcppExport SEXP _mdp_cnts(SEXP SSEXP, SEXP fitnessSEXP, SEXP distancesSEXP, SEXP alphaSEXP, SEXP rhoSEXP, SEXP max_iterationsSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -343,25 +363,25 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
     Rcpp::traits::input_parameter< double >::type fitness(fitnessSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
-    Rcpp::traits::input_parameter< int >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< int >::type max_iterations(max_iterationsSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type max_iterations(max_iterationsSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(cnts(S, fitness, distances, alpha, rho, max_iterations, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 // cnts_sugar
-Rcpp::List cnts_sugar(arma::uvec S, const arma::mat& distances, int alpha, double rho, int max_iterations, bool verbose);
+Rcpp::List cnts_sugar(arma::uvec S, const arma::mat& distances, unsigned alpha, double rho, unsigned max_iterations, bool verbose);
 RcppExport SEXP _mdp_cnts_sugar(SEXP SSEXP, SEXP distancesSEXP, SEXP alphaSEXP, SEXP rhoSEXP, SEXP max_iterationsSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
-    Rcpp::traits::input_parameter< int >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< int >::type max_iterations(max_iterationsSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type max_iterations(max_iterationsSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(cnts_sugar(S, distances, alpha, rho, max_iterations, verbose));
     return rcpp_result_gen;
@@ -376,6 +396,116 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type S(SSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
     rcpp_result_gen = Rcpp::wrap(tour_fitness_binary(S, distances));
+    return rcpp_result_gen;
+END_RCPP
+}
+// crossover
+arma::uvec crossover(const arma::uvec& S_a, const arma::uvec& S_b, const arma::mat& distances);
+RcppExport SEXP _mdp_crossover(SEXP S_aSEXP, SEXP S_bSEXP, SEXP distancesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type S_a(S_aSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type S_b(S_bSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    rcpp_result_gen = Rcpp::wrap(crossover(S_a, S_b, distances));
+    return rcpp_result_gen;
+END_RCPP
+}
+// crossover_rand
+arma::uvec crossover_rand(const arma::uvec& S_a, const arma::uvec& S_b, const arma::mat& distances);
+RcppExport SEXP _mdp_crossover_rand(SEXP S_aSEXP, SEXP S_bSEXP, SEXP distancesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type S_a(S_aSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type S_b(S_bSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    rcpp_result_gen = Rcpp::wrap(crossover_rand(S_a, S_b, distances));
+    return rcpp_result_gen;
+END_RCPP
+}
+// solutions_distance
+double solutions_distance(const arma::uvec& S0, const arma::uvec& S1);
+RcppExport SEXP _mdp_solutions_distance(SEXP S0SEXP, SEXP S1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type S0(S0SEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type S1(S1SEXP);
+    rcpp_result_gen = Rcpp::wrap(solutions_distance(S0, S1));
+    return rcpp_result_gen;
+END_RCPP
+}
+// solution_to_population_distance
+double solution_to_population_distance(const arma::uvec& S0, const arma::umat& population, unsigned tour_size);
+RcppExport SEXP _mdp_solution_to_population_distance(SEXP S0SEXP, SEXP populationSEXP, SEXP tour_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type S0(S0SEXP);
+    Rcpp::traits::input_parameter< const arma::umat& >::type population(populationSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type tour_size(tour_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(solution_to_population_distance(S0, population, tour_size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// index_to_population_distance
+double index_to_population_distance(const unsigned idx, const arma::umat& population);
+RcppExport SEXP _mdp_index_to_population_distance(SEXP idxSEXP, SEXP populationSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const unsigned >::type idx(idxSEXP);
+    Rcpp::traits::input_parameter< const arma::umat& >::type population(populationSEXP);
+    rcpp_result_gen = Rcpp::wrap(index_to_population_distance(idx, population));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tabu_solution_rand
+Rcpp::List tabu_solution_rand(const arma::mat& distances, unsigned tour_size, unsigned alpha, double rho, unsigned max_iterations);
+RcppExport SEXP _mdp_tabu_solution_rand(SEXP distancesSEXP, SEXP tour_sizeSEXP, SEXP alphaSEXP, SEXP rhoSEXP, SEXP max_iterationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type tour_size(tour_sizeSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type max_iterations(max_iterationsSEXP);
+    rcpp_result_gen = Rcpp::wrap(tabu_solution_rand(distances, tour_size, alpha, rho, max_iterations));
+    return rcpp_result_gen;
+END_RCPP
+}
+// update_population_mamdp
+Rcpp::List update_population_mamdp(arma::uvec S, arma::umat& population, arma::vec& fitness, const arma::mat& distances, double beta);
+RcppExport SEXP _mdp_update_population_mamdp(SEXP SSEXP, SEXP populationSEXP, SEXP fitnessSEXP, SEXP distancesSEXP, SEXP betaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type S(SSEXP);
+    Rcpp::traits::input_parameter< arma::umat& >::type population(populationSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type fitness(fitnessSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(update_population_mamdp(S, population, fitness, distances, beta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// initialize_population_mamdp
+Rcpp::List initialize_population_mamdp(const arma::mat& distances, unsigned tour_size, unsigned population_size, unsigned tabu_max_iterations, unsigned tabu_multiplier, double tabu_rho, unsigned tabu_alpha);
+RcppExport SEXP _mdp_initialize_population_mamdp(SEXP distancesSEXP, SEXP tour_sizeSEXP, SEXP population_sizeSEXP, SEXP tabu_max_iterationsSEXP, SEXP tabu_multiplierSEXP, SEXP tabu_rhoSEXP, SEXP tabu_alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type distances(distancesSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type tour_size(tour_sizeSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type population_size(population_sizeSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type tabu_max_iterations(tabu_max_iterationsSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type tabu_multiplier(tabu_multiplierSEXP);
+    Rcpp::traits::input_parameter< double >::type tabu_rho(tabu_rhoSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type tabu_alpha(tabu_alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_population_mamdp(distances, tour_size, population_size, tabu_max_iterations, tabu_multiplier, tabu_rho, tabu_alpha));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -401,12 +531,21 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mdp_getSolutionToPopulationDistanceByIndex", (DL_FUNC) &_mdp_getSolutionToPopulationDistanceByIndex, 2},
     {"_mdp_doTabuSearchParallel", (DL_FUNC) &_mdp_doTabuSearchParallel, 5},
     {"_mdp_initializePoolTiming", (DL_FUNC) &_mdp_initializePoolTiming, 5},
+    {"_mdp_hao_mamdp", (DL_FUNC) &_mdp_hao_mamdp, 10},
     {"_mdp_mamdp", (DL_FUNC) &_mdp_mamdp, 8},
     {"_mdp_obma", (DL_FUNC) &_mdp_obma, 8},
     {"_mdp_dmamdp", (DL_FUNC) &_mdp_dmamdp, 9},
     {"_mdp_cnts", (DL_FUNC) &_mdp_cnts, 7},
     {"_mdp_cnts_sugar", (DL_FUNC) &_mdp_cnts_sugar, 6},
     {"_mdp_tour_fitness_binary", (DL_FUNC) &_mdp_tour_fitness_binary, 2},
+    {"_mdp_crossover", (DL_FUNC) &_mdp_crossover, 3},
+    {"_mdp_crossover_rand", (DL_FUNC) &_mdp_crossover_rand, 3},
+    {"_mdp_solutions_distance", (DL_FUNC) &_mdp_solutions_distance, 2},
+    {"_mdp_solution_to_population_distance", (DL_FUNC) &_mdp_solution_to_population_distance, 3},
+    {"_mdp_index_to_population_distance", (DL_FUNC) &_mdp_index_to_population_distance, 2},
+    {"_mdp_tabu_solution_rand", (DL_FUNC) &_mdp_tabu_solution_rand, 5},
+    {"_mdp_update_population_mamdp", (DL_FUNC) &_mdp_update_population_mamdp, 5},
+    {"_mdp_initialize_population_mamdp", (DL_FUNC) &_mdp_initialize_population_mamdp, 7},
     {NULL, NULL, 0}
 };
 

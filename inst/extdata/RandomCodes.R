@@ -18,7 +18,7 @@ distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.1.
 rst <- binarymodel(distances, m = 50, MAX_TIME = 600, THREADS = 8,  verbose = TRUE)
 
 N <- 2000
-distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.21.b.n2000m200.rds"))
+distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.21.a.n2000m200.rds"))
 distances.d <- as.dist(distances)
 cluster.mdp <- hclust(distances.d)
 tour <- 
@@ -136,9 +136,15 @@ tour_fitness_binary(rst2$S, distances)
 
 S <- rep(0, 2000)
 S[sample(1:2000,200)] <- 1
-fitness <- tour_fitness_binary(S, distances)
+tour_fitness_binary(S, distances)
 microbenchmark::microbenchmark(
   F1 = cnts(S,  fitness, distances,  alpha = 15, max_iterations =  50000, rho = 1, verbose = FALSE), 
   F2 = cnts_sugar(S,  distances,  alpha = 15, max_iterations =  50000, rho = 1, verbose = FALSE),
   times = 10
 )
+
+pop <- initialize_population_mamdp(distances, 200)
+
+pop$fitness
+
+rst <- update_population_mamdp(S, pop$population, pop$fitness, distances)

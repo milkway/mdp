@@ -212,6 +212,24 @@ initializeTiming <- function(distanceMatrix, tourSize, populationSize = 10L, max
 }
 
 #' Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem
+#' Ref: http://dx.doi.org/10.1016/j.ejor.2013.06.002
+#' @details Get over it!
+#' @param \code{distances} Symmetric matrix.
+#' @param \code{tour_size} Subset size of nodes.
+#' @param \code{population_size} Number of individual in population.
+#' @param \code{max_iterations} for the tabu search.
+#' @param \code{max_time} time limit.
+#' @param \code{beta} for update population.
+#' @param \code{tabu_rho} for tabu search
+#' @param \code{tabu_alpha} for tabu search.
+#' @param \code{verbose} well.
+#' @return A better person.
+#' @export
+hao_mamdp <- function(distances, tour_size, population_size = 10L, max_time = 20, beta = .6, population_multiplier = 3L, tabu_max_iterations = 50000L, tabu_rho = 1, tabu_alpha = 15, verbose = FALSE) {
+    .Call(`_mdp_hao_mamdp`, distances, tour_size, population_size, max_time, beta, population_multiplier, tabu_max_iterations, tabu_rho, tabu_alpha, verbose)
+}
+
+#' Hao's Hybrid Metaheuristic method for the Maximum Diversity Problem
 #' @details Get over it!
 #' @param \code{distanceMatrix} Symmetric matrix.
 #' @param \code{tourSize} Subset size of nodes.
@@ -287,5 +305,100 @@ cnts_sugar <- function(S, distances, alpha = 15L, rho = 1, max_iterations = 1000
 #' @export 
 tour_fitness_binary <- function(S, distances) {
     .Call(`_mdp_tour_fitness_binary`, S, distances)
+}
+
+#' The crossover operator of the MAMDP algorithm 
+#' Cross Over between S_a and S_b
+#' @param \code{S_a} Parent A
+#' @param \code{S_b} Parent B
+#' @param \code{distances} Square and symmetric distance matrix 
+#' @return A baby 
+#' @examples
+#' crossover()
+crossover <- function(S_a, S_b, distances) {
+    .Call(`_mdp_crossover`, S_a, S_b, distances)
+}
+
+#' The crossover operator of the MAMDP algorithm 
+#' Cross Over between S_a and S_b
+#' @param \code{S_a} Parent A
+#' @param \code{S_b} Parent B
+#' @param \code{distances} Square and symmetric distance matrix 
+#' @return A baby 
+#' @examples
+#' crossover()
+crossover_rand <- function(S_a, S_b, distances) {
+    .Call(`_mdp_crossover_rand`, S_a, S_b, distances)
+}
+
+#' Def. 1  of http://dx.doi.org/10.1016/j.ejor.2013.06.002
+#' Distance between to individuals;
+#' @details Distance between to individuals: m - sum(S0XS1);
+#' @param \code{S0} Individual.
+#' @param \code{S1} Individual.
+#' @return A int, number of moves to go from one individual to the other.
+#' @export 
+solutions_distance <- function(S0, S1) {
+    .Call(`_mdp_solutions_distance`, S0, S1)
+}
+
+#' Def. 2  of http://dx.doi.org/10.1016/j.ejor.2013.06.002
+#' Distance between a individual and a population;
+#' @details Distance between to individuals in population: min(m - sum(S0XS), S in Population);
+#' @param \code{S0} Individual.
+#' @param \code{Population} Target Population.
+#' @return A int, min distance between a indivitual and a population.
+#' @export 
+solution_to_population_distance <- function(S0, population, tour_size) {
+    .Call(`_mdp_solution_to_population_distance`, S0, population, tour_size)
+}
+
+#' Def. 2  of http://dx.doi.org/10.1016/j.ejor.2013.06.002
+#' Distance between a individual and a population;
+#' Distance between a individual and a population by index;
+#' @details Distance between to individuals in population: min(m - sum(S0XS), S in Population);
+#' @param \code{S0} Individual.
+#' @param \code{Population} Target Population.
+#' @return A int, min distance between a indivitual and a population.
+#' @export 
+index_to_population_distance <- function(idx, population) {
+    .Call(`_mdp_index_to_population_distance`, idx, population)
+}
+
+#' Tabu search in a random solution
+#' @details generate a random solution, apply tabu search and return the new solution and its fitness
+#' @param \code{distances} Distance matrix
+#' @param \code{tour_size} You know!
+#' @param \code{alpha} You know!
+#' @param \code{rho} You know!
+#' @param \code{max_iteration} You know!
+#' @return List with solution and its fitness
+#' @export
+tabu_solution_rand <- function(distances, tour_size, alpha = 15L, rho = 1, max_iterations = 50000L) {
+    .Call(`_mdp_tabu_solution_rand`, distances, tour_size, alpha, rho, max_iterations)
+}
+
+#' MAMDP population update
+#' Algorithm 4. Update population strategy of the MAMDP algorithm
+#' Ref: http://dx.doi.org/10.1016/j.ejor.2013.06.002
+#' @param \code{S} population candidate
+#' @param \code{Population} population to be updated
+#' @return New population 
+#' @examples
+#' updatePopulation()
+update_population_mamdp <- function(S, population, fitness, distances, beta = 0.6) {
+    .Call(`_mdp_update_population_mamdp`, S, population, fitness, distances, beta)
+}
+
+#' Pool initialization for MAMDP
+#' Section 2.2 of http://dx.doi.org/10.1016/j.ejor.2013.06.002
+#' @details Get the initial populatio
+#' @param \code{tourSize} Ok. Stop it.
+#' @param \code{Distances} Distance matrix
+#' @param \code{populationSize} You know!
+#' @return A matrix where each column is a individual in the population
+#' @export
+initialize_population_mamdp <- function(distances, tour_size, population_size = 10L, tabu_max_iterations = 50000L, tabu_multiplier = 3L, tabu_rho = 1, tabu_alpha = 15L) {
+    .Call(`_mdp_initialize_population_mamdp`, distances, tour_size, population_size, tabu_max_iterations, tabu_multiplier, tabu_rho, tabu_alpha)
 }
 
