@@ -58,7 +58,7 @@ Rcpp::List hao_mamdp(const arma::mat& distances,
     arma::uvec S1 = population.col(nodes(0));
     arma::uvec S2 = population.col(nodes(1));
     //5. Crossover
-    arma::uvec S0 = crossover_rand(S1, S2, distances);
+    arma::uvec S0 = crossover(S1, S2, distances);
     double S0_fitness = tour_fitness_binary(S0, distances);
     //6. TabuSearch
     Rcpp::List tabu_rst = cnts(S0,  S0_fitness, distances, tabu_alpha, tabu_rho, tabu_max_iterations, false);
@@ -77,8 +77,7 @@ Rcpp::List hao_mamdp(const arma::mat& distances,
               best_fitness, S0_fitness, time_best, time_elapsed);;
     Rcpp::checkUserInterrupt();
   }
-  Rprintf("\nTabu Search...\n");
-
+  
   Rcpp::DataFrame rst = Rcpp::DataFrame::create(
     Rcpp::Named("fitness") = best_fitness,
     Rcpp::Named("time") = time_best,

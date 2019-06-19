@@ -148,3 +148,15 @@ pop <- initialize_population_mamdp(distances, 200)
 pop$fitness
 
 rst <- update_population_mamdp(S, pop$population, pop$fitness, distances)
+
+distances <- read_rds(paste0(system.file("extdata", package = "brkga"), "/MDG.21.a.n2000m200.rds"))
+
+S <- hao_mamdp(distances = distances, 
+           tour_size = 200, 
+           population_size = 10, 
+           tabu_max_iterations = 10000, 
+           max_time = 40, 
+           tabu_rho = 1, 
+           population_multiplier = 1, 
+           verbose = TRUE)
+S$data
